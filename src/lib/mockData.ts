@@ -129,24 +129,24 @@ export const challenges: Challenge[] = [
     datasetDescription: "rider_info.json, dispatch_log.csv, pending_orders.csv",
     datasetDownloadUrl: "/datasets/delivery_data.zip",
     answerKey: {
-      q1: "4건",
-      q2: "정스피드 > 김철수 > 이영희 > 박민수 > 최신속",
-      q3: "서초구",
-      q4: "라이더의 최대 적재 용량 초과",
-      q5: "정스피드 > 김철수 = 최신속 > 이영희 = 박민수",
+      "pfct-ocr-q1": "4건",
+      "pfct-ocr-q2": "정스피드 > 김철수 > 이영희 > 박민수 > 최신속",
+      "pfct-ocr-q3": "서초구",
+      "pfct-ocr-q4": "라이더의 최대 적재 용량 초과",
+      "pfct-ocr-q5": "정스피드 > 김철수 = 최신속 > 이영희 = 박민수",
     },
     questions: [
       {
-        id: "q1",
+        id: "pfct-ocr-q1",
         order: 1,
         type: "single",
         prompt:
-          "dispatch_log.csv 데이터 중, 선호 지역 가중치 적용으로 인해 실제 거리상 더 가까운 라이더가 있었음에도 배차권을 얻은 ‘역전 배차’ 건수는 몇 건인가요?",
+          "dispatch_log.csv 데이터 중, 선호 지역 가중치 적용으로 인해 실제 거리상 더 가까운 라이더가 있었음에도 배차권을 얻은 '역전 배차' 건수는 몇 건인가요?",
         options: ["2건", "3건", "4건", "5건"],
         required: true,
       },
       {
-        id: "q2",
+        id: "pfct-ocr-q2",
         order: 2,
         type: "single",
         prompt:
@@ -160,7 +160,7 @@ export const challenges: Challenge[] = [
         required: true,
       },
       {
-        id: "q3",
+        id: "pfct-ocr-q3",
         order: 3,
         type: "single",
         prompt:
@@ -169,7 +169,7 @@ export const challenges: Challenge[] = [
         required: true,
       },
       {
-        id: "q4",
+        id: "pfct-ocr-q4",
         order: 4,
         type: "single",
         prompt:
@@ -183,7 +183,7 @@ export const challenges: Challenge[] = [
         required: true,
       },
       {
-        id: "q5",
+        id: "pfct-ocr-q5",
         order: 5,
         type: "single",
         prompt:
