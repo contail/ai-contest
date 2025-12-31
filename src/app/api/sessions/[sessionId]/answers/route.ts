@@ -12,8 +12,8 @@ type AnswersRequest = {
   payload?: unknown;
 };
 
-type RouteParams = {
-  params: { sessionId: string };
+type RouteContext = {
+  params: Promise<{ sessionId: string }>;
 };
 
 const serializePayload = (payload: unknown) => {
@@ -38,11 +38,13 @@ const extractUrls = (payload: unknown) => {
 
 const isValidUrl = (value: string) => /^https?:\/\/\S+$/i.test(value.trim());
 
-export async function PUT(request: Request, { params }: RouteParams) {
+export async function PUT(request: Request, context: RouteContext) {
+  const { sessionId } = await context.params;
+
   const { data: session } = await supabase
-    .from("SubmissionSession")
-    .select("id,status,challengeId")
-    .eq("id", params.sessionId)
+    .from("submission_sessions")
+    .select("id,status,challenge_id")
+    .eq("id", sessionId)
     .maybeSingle();
 
   if (!session) {
@@ -71,9 +73,9 @@ export async function PUT(request: Request, { params }: RouteParams) {
   }
 
   const { data: challenge } = await supabase
-    .from("Challenge")
-    .select("restrictDatasetUrl")
-    .eq("id", session.challengeId)
+    .from("challenges")
+    .select("restrict_dataset_url")
+    .eq("id", session.challenge_id)
     .maybeSingle();
 
   if (!challenge) {
@@ -82,15 +84,15 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
   const questionIds = entries.map((entry) => entry.questionId);
   const { data: questions } = await supabase
-    .from("Question")
+    .from("questions")
     .select("id,type")
     .in("id", questionIds);
 
   const questionTypeMap = new Map(
-    questions.map((question) => [question.id, question.type])
+    (questions ?? []).map((question) => [question.id, question.type])
   );
 
-  if (challenge.restrictDatasetUrl) {
+  if (challenge.restrict_dataset_url) {
     const urlEntries = entries.filter((entry) => {
       const type = questionTypeMap.get(entry.questionId) ?? "";
       return type.toUpperCase() === "URL" || type.toUpperCase() === "MULTI_URL";
@@ -110,9 +112,9 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     if (submittedUrls.length > 0) {
       const { data: matched } = await supabase
-        .from("DatasetUrl")
+        .from("dataset_urls")
         .select("url")
-        .eq("challengeId", session.challengeId)
+        .eq("challenge_id", session.challenge_id)
         .in("url", submittedUrls);
       const allowed = new Set((matched ?? []).map((item) => item.url));
       const notAllowed = submittedUrls.filter((url) => !allowed.has(url));
@@ -129,20 +131,20 @@ export async function PUT(request: Request, { params }: RouteParams) {
     entries.map(async (entry) => {
       const payload = serializePayload(entry.payload);
       const { data: updated } = await supabase
-        .from("Answer")
+        .from("answers")
         .update({
           payload,
-          updatedAt: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         })
-        .eq("sessionId", params.sessionId)
-        .eq("questionId", entry.questionId)
+        .eq("session_id", sessionId)
+        .eq("question_id", entry.questionId)
         .select("id");
 
       if (!updated || updated.length === 0) {
-        await supabase.from("Answer").insert({
+        await supabase.from("answers").insert({
           id: crypto.randomUUID(),
-          sessionId: params.sessionId,
-          questionId: entry.questionId,
+          session_id: sessionId,
+          question_id: entry.questionId,
           payload,
         });
       }

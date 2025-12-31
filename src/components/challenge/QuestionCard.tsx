@@ -17,20 +17,15 @@ export default function QuestionCard({
   disabled,
 }: QuestionCardProps) {
   return (
-    <article className="border border-black/5 bg-[var(--card)] p-5 shadow-sm transition hover:shadow-[0_18px_36px_rgba(15,23,42,0.08)]">
+    <article className="rounded-[var(--radius-lg)] bg-[var(--card)] p-6 shadow-[var(--shadow-sm)]">
       <div className="flex items-start gap-4">
-        <div className="text-sm font-semibold text-[var(--brand)]">
-          Q{question.order}.
+        <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-[var(--lime-100)] text-sm font-bold text-[var(--lime-600)]">
+          {question.order}
         </div>
         <div className="flex-1">
-          <h3 className="text-sm font-semibold text-slate-900">
+          <h3 className="text-[15px] font-medium leading-[1.7] text-[var(--gray-900)]">
             {question.prompt}
           </h3>
-          {question.required ? (
-            <p className="mt-1 text-xs font-semibold text-rose-500">
-              필수 응답
-            </p>
-          ) : null}
           <AnswerInput
             question={question}
             value={value}
@@ -38,7 +33,7 @@ export default function QuestionCard({
             disabled={disabled}
           />
           {errorText ? (
-            <p className="mt-2 text-xs text-rose-500">{errorText}</p>
+            <p className="mt-3 text-sm font-medium text-red-500">{errorText}</p>
           ) : null}
         </div>
       </div>

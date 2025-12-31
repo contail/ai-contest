@@ -8,73 +8,94 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+model User {
+  id        String              @id // Supabase Auth uid
+  email     String              @unique
+  name      String?
+  nickname  String?
+  role      String              @default("user") // 'user' | 'admin'
+  createdAt DateTime            @default(now()) @map("created_at")
+  sessions  SubmissionSession[]
+
+  @@map("users")
+}
+
 model Challenge {
-  id                 String      @id @default(cuid())
+  id                 String              @id @default(cuid())
   title              String
   subtitle           String
   summary            String
   tags               String
   badge              String?
-  heroCopy           String?
+  heroCopy           String?             @map("hero_copy")
   description        String
-  cautionText        String
-  datasetLabel       String
-  datasetFileName    String
-  datasetDescription String
-  datasetDownloadUrl String?
-  restrictDatasetUrl Boolean     @default(false)
-  isPublished        Boolean     @default(false)
-  createdAt          DateTime    @default(now())
+  cautionText        String?             @map("caution_text")
+  datasetLabel       String?             @map("dataset_label")
+  datasetFileName    String?             @map("dataset_file_name")
+  datasetDescription String?             @map("dataset_description")
+  datasetDownloadUrl String?             @map("dataset_download_url")
+  restrictDatasetUrl Boolean             @default(false) @map("restrict_dataset_url")
+  isPublished        Boolean             @default(false) @map("is_published")
+  createdAt          DateTime            @default(now()) @map("created_at")
   questions          Question[]
   datasetUrls        DatasetUrl[]
   sessions           SubmissionSession[]
+
+  @@map("challenges")
 }
 
 model DatasetUrl {
   id          String    @id @default(cuid())
-  challengeId String
+  challengeId String    @map("challenge_id")
   url         String    @unique
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime  @default(now()) @map("created_at")
   challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@map("dataset_urls")
 }
 
 model Question {
-  id          String       @id @default(cuid())
-  challengeId String
+  id          String    @id @default(cuid())
+  challengeId String    @map("challenge_id")
   order       Int
   type        String
   prompt      String
   options     String?
-  required    Boolean      @default(false)
-  createdAt   DateTime     @default(now())
-  challenge   Challenge    @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  required    Boolean   @default(false)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
   answers     Answer[]
 
   @@unique([challengeId, order])
+  @@map("questions")
 }
 
 model SubmissionSession {
-  id          String        @id @default(cuid())
-  challengeId String
+  id          String    @id @default(cuid())
+  userId      String?   @map("user_id")
+  challengeId String    @map("challenge_id")
   nickname    String
-  status      String        @default("DRAFT")
-  createdAt   DateTime      @default(now())
-  submittedAt DateTime?
-  challenge   Challenge     @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  status      String    @default("DRAFT")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  submittedAt DateTime? @map("submitted_at")
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
   answers     Answer[]
 
   @@unique([challengeId, nickname])
+  @@map("submission_sessions")
 }
 
 model Answer {
-  id         String             @id @default(cuid())
-  sessionId  String
-  questionId String
+  id         String            @id @default(cuid())
+  sessionId  String            @map("session_id")
+  questionId String            @map("question_id")
   payload    String
-  createdAt  DateTime           @default(now())
-  updatedAt  DateTime           @updatedAt
-  session    SubmissionSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  question   Question           @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  createdAt  DateTime          @default(now()) @map("created_at")
+  updatedAt  DateTime          @updatedAt @map("updated_at")
+  session    SubmissionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question   Question          @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   @@unique([sessionId, questionId])
+  @@map("answers")
 }

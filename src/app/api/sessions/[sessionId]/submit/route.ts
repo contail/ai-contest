@@ -1,15 +1,17 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseServer";
 
-type RouteParams = {
-  params: { sessionId: string };
+type RouteContext = {
+  params: Promise<{ sessionId: string }>;
 };
 
-export async function POST(_: Request, { params }: RouteParams) {
+export async function POST(_: Request, context: RouteContext) {
+  const { sessionId } = await context.params;
+
   const { data: session } = await supabase
-    .from("SubmissionSession")
+    .from("submission_sessions")
     .select("id,status")
-    .eq("id", params.sessionId)
+    .eq("id", sessionId)
     .maybeSingle();
 
   if (!session) {
@@ -24,14 +26,23 @@ export async function POST(_: Request, { params }: RouteParams) {
   }
 
   const { data: updated } = await supabase
-    .from("SubmissionSession")
+    .from("submission_sessions")
     .update({
       status: "SUBMITTED",
-      submittedAt: new Date().toISOString(),
+      submitted_at: new Date().toISOString(),
     })
-    .eq("id", params.sessionId)
-    .select("id,challengeId,nickname,status,createdAt,submittedAt")
+    .eq("id", sessionId)
+    .select("id,challenge_id,nickname,status,created_at,submitted_at")
     .single();
 
-  return NextResponse.json({ session: updated });
+  return NextResponse.json({
+    session: updated ? {
+      id: updated.id,
+      challengeId: updated.challenge_id,
+      nickname: updated.nickname,
+      status: updated.status,
+      createdAt: updated.created_at,
+      submittedAt: updated.submitted_at,
+    } : null,
+  });
 }

@@ -14,83 +14,80 @@ export default function ChallengeIntroPanel({
   const isInternalDownload = !challenge.datasetDownloadUrl && hasInternalDataset;
 
   return (
-    <section className="flex flex-col gap-6 border border-black/5 bg-[var(--card)] p-6 shadow-[var(--surface-shadow)]">
-      <header className="space-y-2 border-b border-slate-200 pb-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-400">
-          {challenge.subtitle}
-        </p>
-        <h1 className="text-2xl font-semibold text-slate-900">
-          {challenge.title}
-        </h1>
-      </header>
-
-      <div className="space-y-3 border-b border-slate-200 pb-5">
-        <h2 className="border-l-2 border-[var(--brand)] pl-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-          콘테스트 개요
-        </h2>
-        <p className="text-sm leading-relaxed text-slate-700">
+    <section className="flex flex-col gap-8 rounded-[var(--radius-lg)] bg-[var(--card)] p-7 shadow-[var(--shadow-sm)]">
+      {/* 문제 설명 */}
+      <div className="space-y-4">
+        <h2 className="text-base font-bold text-[var(--gray-900)]">문제 설명</h2>
+        <p className="text-[15px] leading-[1.8] text-[var(--gray-700)]">
           {challenge.description}
         </p>
       </div>
 
-      <div className="space-y-2 border-b border-slate-200 pb-5">
-        <h2 className="border-l-2 border-[var(--brand)] pl-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-          분석 시 참고 사항
-        </h2>
-        <p className="text-sm leading-relaxed text-slate-600">
-          {challenge.cautionText}
-        </p>
+      {/* 유의사항 - 강조 박스 */}
+      {challenge.cautionText && (
+        <div className="space-y-3">
+          <h2 className="text-base font-bold text-[var(--gray-900)]">유의사항</h2>
+          <div className="rounded-[var(--radius-md)] bg-[var(--lime-50)] px-5 py-4">
+            <p className="flex items-start gap-2 text-[15px] leading-relaxed text-[var(--lime-700)]">
+              <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[var(--lime-500)]" />
+              {challenge.cautionText}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* 문제 자료 */}
+      <div className="space-y-4">
+        <h2 className="text-base font-bold text-[var(--gray-900)]">문제 자료</h2>
+        {datasetHref ? (
+          <a
+            className="inline-flex items-center gap-3 rounded-[var(--radius-md)] bg-[var(--gray-800)] px-5 py-3.5 text-sm font-medium text-white transition hover:bg-[var(--gray-700)]"
+            href={datasetHref}
+            download={isInternalDownload ? challenge.datasetFileName : undefined}
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            {challenge.datasetFileName}
+          </a>
+        ) : (
+          <div className="inline-flex items-center gap-3 rounded-[var(--radius-md)] bg-[var(--gray-100)] px-5 py-3.5 text-sm font-medium text-[var(--gray-400)]">
+            {challenge.datasetLabel}
+          </div>
+        )}
+        {challenge.datasetDescription && (
+          <div className="rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--gray-25)] px-5 py-4">
+            <p className="font-mono text-sm font-medium text-[var(--gray-800)]">
+              {challenge.datasetFileName}
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-[var(--gray-600)]">
+              {challenge.datasetDescription}
+            </p>
+          </div>
+        )}
       </div>
-      {challenge.scoringSummary || challenge.scoringItems?.length ? (
-        <div className="space-y-2 border-b border-slate-200 pb-5">
-          <h2 className="border-l-2 border-[var(--brand)] pl-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-            배점 및 채점 기준
-          </h2>
-          {challenge.scoringSummary ? (
-            <p className="text-sm font-semibold text-slate-700">
+
+      {/* 배점 및 채점 기준 */}
+      {(challenge.scoringSummary || challenge.scoringItems?.length) && (
+        <div className="space-y-4">
+          <h2 className="text-base font-bold text-[var(--gray-900)]">배점 및 채점 기준</h2>
+          {challenge.scoringSummary && (
+            <p className="text-[15px] font-semibold text-[var(--gray-800)]">
               {challenge.scoringSummary}
             </p>
-          ) : null}
+          )}
           {challenge.scoringItems?.length ? (
-            <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-slate-600">
+            <ul className="space-y-2">
               {challenge.scoringItems.map((item) => (
-                <li key={item}>{item}</li>
+                <li key={item} className="flex items-start gap-3 text-[15px] text-[var(--gray-600)]">
+                  <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[var(--gray-400)]" />
+                  {item}
+                </li>
               ))}
             </ul>
           ) : null}
         </div>
-      ) : null}
-
-      <div className="space-y-3">
-        <h2 className="border-l-2 border-[var(--brand)] pl-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-          참고 데이터
-        </h2>
-        {datasetHref ? (
-          <a
-            className="inline-flex items-center gap-2 border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--brand)]"
-            href={datasetHref}
-            download={isInternalDownload ? challenge.datasetFileName : undefined}
-          >
-            {challenge.datasetLabel}
-            <span aria-hidden>↓</span>
-          </a>
-        ) : (
-          <div className="inline-flex items-center gap-2 border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-400">
-            {challenge.datasetLabel}
-          </div>
-        )}
-        <div className="border border-dashed border-slate-200 bg-slate-50 px-4 py-3">
-          <p className="text-xs font-semibold text-slate-700">
-            {challenge.datasetFileName}
-          </p>
-          <p className="mt-1 text-xs text-slate-500">
-            {challenge.datasetDescription}
-          </p>
-          <p className="mt-2 text-xs text-slate-500">
-            총 {challenge.datasetCount}건
-          </p>
-        </div>
-      </div>
+      )}
     </section>
   );
 }

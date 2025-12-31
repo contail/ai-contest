@@ -28,20 +28,20 @@ export async function GET(_request: Request, context: RouteContext) {
   }
 
   const { data: challenge } = await supabase
-    .from("Challenge")
-    .select("datasetFileName")
+    .from("challenges")
+    .select("dataset_file_name")
     .eq("id", id)
     .maybeSingle();
 
   const { data: datasetUrls } = await supabase
-    .from("DatasetUrl")
+    .from("dataset_urls")
     .select("url")
-    .eq("challengeId", id)
-    .order("createdAt", { ascending: true });
+    .eq("challenge_id", id)
+    .order("created_at", { ascending: true });
 
   if (challenge && datasetUrls && datasetUrls.length > 0) {
     const urls = datasetUrls.map((item) => item.url);
-    return buildDownloadResponse(challenge.datasetFileName, urls);
+    return buildDownloadResponse(challenge.dataset_file_name, urls);
   }
 
   const mock = challenges.find((item) => item.id === id);

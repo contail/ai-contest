@@ -1,17 +1,19 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseServer";
 
-type RouteParams = {
-  params: { id: string };
+type RouteContext = {
+  params: Promise<{ id: string }>;
 };
 
-export async function GET(_: Request, { params }: RouteParams) {
+export async function GET(_: Request, context: RouteContext) {
+  const { id } = await context.params;
+
   const { data: challenge, error } = await supabase
-    .from("Challenge")
+    .from("challenges")
     .select(
-      "id,title,subtitle,summary,tags,badge,heroCopy,description,cautionText,datasetLabel,datasetFileName,datasetDescription,datasetDownloadUrl,restrictDatasetUrl"
+      "id,title,subtitle,summary,tags,badge,hero_copy,description,caution_text,dataset_label,dataset_file_name,dataset_description,dataset_download_url,restrict_dataset_url"
     )
-    .eq("id", params.id)
+    .eq("id", id)
     .maybeSingle();
 
   if (error || !challenge) {
@@ -19,15 +21,15 @@ export async function GET(_: Request, { params }: RouteParams) {
   }
 
   const { data: questionsData } = await supabase
-    .from("Question")
+    .from("questions")
     .select("id,order,type,prompt,options,required")
-    .eq("challengeId", params.id)
+    .eq("challenge_id", id)
     .order("order", { ascending: true });
 
   const { data: datasetUrls } = await supabase
-    .from("DatasetUrl")
+    .from("dataset_urls")
     .select("id")
-    .eq("challengeId", params.id);
+    .eq("challenge_id", id);
 
   const datasetCount = datasetUrls?.length ?? 0;
   const questions = (questionsData ?? []).map((question) => ({
@@ -43,14 +45,14 @@ export async function GET(_: Request, { params }: RouteParams) {
       summary: challenge.summary,
       tags: challenge.tags ? JSON.parse(challenge.tags) : [],
       badge: challenge.badge,
-      heroCopy: challenge.heroCopy,
+      heroCopy: challenge.hero_copy,
       description: challenge.description,
-      cautionText: challenge.cautionText,
-      datasetLabel: challenge.datasetLabel,
-      datasetFileName: challenge.datasetFileName,
-      datasetDescription: challenge.datasetDescription,
-      datasetDownloadUrl: challenge.datasetDownloadUrl,
-      restrictDatasetUrl: challenge.restrictDatasetUrl,
+      cautionText: challenge.caution_text,
+      datasetLabel: challenge.dataset_label,
+      datasetFileName: challenge.dataset_file_name,
+      datasetDescription: challenge.dataset_description,
+      datasetDownloadUrl: challenge.dataset_download_url,
+      restrictDatasetUrl: challenge.restrict_dataset_url,
       datasetCount,
       questions,
     },

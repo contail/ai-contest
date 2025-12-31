@@ -21,8 +21,15 @@ export default function AnswerInput({
   onChange,
   disabled,
 }: AnswerInputProps) {
-  const baseClass =
-    "mt-3 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm focus:border-[var(--brand)] focus:outline-none focus:ring-1 focus:ring-[var(--brand)]/30";
+  const baseInputClass =
+    "mt-3 w-full rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-white px-4 py-3 text-sm text-[var(--gray-900)] placeholder:text-[var(--gray-400)] focus:border-[var(--brand)] focus:outline-none focus:ring-2 focus:ring-[var(--lime-100)] transition-colors";
+
+  const optionClass = (isSelected: boolean) =>
+    `flex cursor-pointer items-center gap-3 rounded-[var(--radius-sm)] border px-4 py-3 text-sm transition-all ${
+      isSelected
+        ? "border-[var(--brand)] bg-[var(--lime-50)] text-[var(--gray-900)]"
+        : "border-[var(--border)] bg-[var(--gray-25)] text-[var(--gray-700)] hover:border-[var(--gray-300)]"
+    }`;
 
   switch (question.type) {
     case "single":
@@ -30,17 +37,14 @@ export default function AnswerInput({
       return (
         <div className="mt-3 space-y-2">
           {question.options?.map((option) => (
-            <label
-              key={option}
-              className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-700"
-            >
+            <label key={option} className={optionClass(value === option)}>
               <input
                 type="radio"
                 name={question.id}
                 disabled={disabled}
                 checked={value === option}
                 onChange={() => onChange(option)}
-                className="h-4 w-4 accent-slate-900"
+                className="h-4 w-4 accent-[var(--brand)]"
               />
               {option}
             </label>
@@ -55,10 +59,7 @@ export default function AnswerInput({
             const selected = normalizeArrayValue(value);
             const isChecked = selected.includes(option);
             return (
-              <label
-                key={option}
-                className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-700"
-              >
+              <label key={option} className={optionClass(isChecked)}>
                 <input
                   type="checkbox"
                   name={`${question.id}-${option}`}
@@ -71,7 +72,7 @@ export default function AnswerInput({
                       onChange([...selected, option]);
                     }
                   }}
-                  className="h-4 w-4 accent-slate-900"
+                  className="h-4 w-4 accent-[var(--brand)]"
                 />
                 {option}
               </label>
@@ -86,7 +87,7 @@ export default function AnswerInput({
           <input
             type="url"
             placeholder={question.helperText ?? "https://"}
-            className={baseClass}
+            className={baseInputClass}
             disabled={disabled}
             value={normalizeStringValue(value)}
             onChange={(event) => onChange(event.target.value)}
@@ -100,24 +101,11 @@ export default function AnswerInput({
           <textarea
             rows={4}
             placeholder={question.helperText ?? "URL을 입력하세요."}
-            className={baseClass}
+            className={baseInputClass}
             disabled={disabled}
             value={normalizeStringValue(value)}
             onChange={(event) => onChange(event.target.value)}
           />
-          <button
-            type="button"
-            className="mt-2 inline-flex items-center justify-center rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600"
-            onClick={() =>
-              onChange(
-                normalizeStringValue(value)
-                  ? `${normalizeStringValue(value)}\n`
-                  : ""
-              )
-            }
-          >
-            URL 추가
-          </button>
         </div>
       );
     case "short":
@@ -128,7 +116,7 @@ export default function AnswerInput({
           <input
             type="text"
             placeholder="응답을 입력하세요."
-            className={baseClass}
+            className={baseInputClass}
             disabled={disabled}
             value={normalizeStringValue(value)}
             onChange={(event) => onChange(event.target.value)}

@@ -1,23 +1,24 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseServer";
 
-type RouteParams = {
-  params: { id: string };
+type RouteContext = {
+  params: Promise<{ id: string }>;
 };
 
 type SettingsPayload = {
   restrictDatasetUrl?: boolean;
 };
 
-export async function POST(request: Request, { params }: RouteParams) {
+export async function POST(request: Request, context: RouteContext) {
+  const { id } = await context.params;
   const body = (await request.json()) as SettingsPayload;
 
   const { data: challenge } = await supabase
-    .from("Challenge")
+    .from("challenges")
     .update({
-      restrictDatasetUrl: body.restrictDatasetUrl ?? false,
+      restrict_dataset_url: body.restrictDatasetUrl ?? false,
     })
-    .eq("id", params.id)
+    .eq("id", id)
     .select("*")
     .single();
 

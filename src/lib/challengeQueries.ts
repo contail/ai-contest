@@ -51,12 +51,12 @@ const parseOptions = (options: string | null) => {
 
 export async function getChallenges(): Promise<ChallengeCardData[]> {
   const { data, error } = await supabase
-    .from("Challenge")
+    .from("challenges")
     .select(
-      "id,title,subtitle,summary,tags,badge,heroCopy,description,cautionText,datasetLabel,datasetFileName,datasetDescription,datasetDownloadUrl,restrictDatasetUrl"
+      "id,title,subtitle,summary,tags,badge,hero_copy,description,caution_text,dataset_label,dataset_file_name,dataset_description,dataset_download_url,restrict_dataset_url"
     )
-    .eq("isPublished", true)
-    .order("createdAt", { ascending: false });
+    .eq("is_published", true)
+    .order("created_at", { ascending: false });
 
   if (error || !data) {
     console.error("getChallenges failed", error);
@@ -70,16 +70,16 @@ export async function getChallenges(): Promise<ChallengeCardData[]> {
     summary: challenge.summary,
     tags: parseTags(challenge.tags),
     badge: challenge.badge,
-    heroCopy: challenge.heroCopy,
+    heroCopy: challenge.hero_copy,
     description: challenge.description,
-    cautionText: challenge.cautionText,
+    cautionText: challenge.caution_text,
     scoringSummary: null,
     scoringItems: null,
-    datasetLabel: challenge.datasetLabel,
-    datasetFileName: challenge.datasetFileName,
-    datasetDescription: challenge.datasetDescription,
-    datasetDownloadUrl: challenge.datasetDownloadUrl,
-    restrictDatasetUrl: challenge.restrictDatasetUrl,
+    datasetLabel: challenge.dataset_label,
+    datasetFileName: challenge.dataset_file_name,
+    datasetDescription: challenge.dataset_description,
+    datasetDownloadUrl: challenge.dataset_download_url,
+    restrictDatasetUrl: challenge.restrict_dataset_url,
   }));
 }
 
@@ -88,9 +88,9 @@ export async function getChallengeDetail(
 ): Promise<ChallengeDetailData | null> {
   if (!id) return null;
   const { data: challenge, error } = await supabase
-    .from("Challenge")
+    .from("challenges")
     .select(
-      "id,title,subtitle,summary,tags,badge,heroCopy,description,cautionText,datasetLabel,datasetFileName,datasetDescription,datasetDownloadUrl,restrictDatasetUrl"
+      "id,title,subtitle,summary,tags,badge,hero_copy,description,caution_text,dataset_label,dataset_file_name,dataset_description,dataset_download_url,restrict_dataset_url"
     )
     .eq("id", id)
     .maybeSingle();
@@ -98,15 +98,15 @@ export async function getChallengeDetail(
   if (error || !challenge) return null;
 
   const { data: questions } = await supabase
-    .from("Question")
+    .from("questions")
     .select("id,order,type,prompt,options,required")
-    .eq("challengeId", id)
+    .eq("challenge_id", id)
     .order("order", { ascending: true });
 
   const { data: datasetUrls } = await supabase
-    .from("DatasetUrl")
+    .from("dataset_urls")
     .select("id")
-    .eq("challengeId", id);
+    .eq("challenge_id", id);
 
   return {
     id: challenge.id,
@@ -115,16 +115,16 @@ export async function getChallengeDetail(
     summary: challenge.summary,
     tags: parseTags(challenge.tags),
     badge: challenge.badge,
-    heroCopy: challenge.heroCopy,
+    heroCopy: challenge.hero_copy,
     description: challenge.description,
-    cautionText: challenge.cautionText,
+    cautionText: challenge.caution_text,
     scoringSummary: null,
     scoringItems: null,
-    datasetLabel: challenge.datasetLabel,
-    datasetFileName: challenge.datasetFileName,
-    datasetDescription: challenge.datasetDescription,
-    datasetDownloadUrl: challenge.datasetDownloadUrl,
-    restrictDatasetUrl: challenge.restrictDatasetUrl,
+    datasetLabel: challenge.dataset_label,
+    datasetFileName: challenge.dataset_file_name,
+    datasetDescription: challenge.dataset_description,
+    datasetDownloadUrl: challenge.dataset_download_url,
+    restrictDatasetUrl: challenge.restrict_dataset_url,
     datasetCount: datasetUrls?.length ?? 0,
     questions: (questions ?? []).map((question) => ({
       id: question.id,

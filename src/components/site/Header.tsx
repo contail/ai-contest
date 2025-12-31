@@ -1,12 +1,23 @@
+"use client";
+
 import Link from "next/link";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { UserMenu } from "@/components/auth/UserMenu";
 
 const navItems = [
-  { label: "콘테스트 목록", href: "/" },
-  { label: "결과 요약", href: "/results" },
-  { label: "관리자", href: "/admin" },
+  { label: "콘테스트 목록", href: "/", adminOnly: false },
+  { label: "결과 요약", href: "/results", adminOnly: true },
+  { label: "관리자", href: "/admin", adminOnly: true },
 ];
 
 export default function Header() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+
+  const visibleNavItems = navItems.filter(
+    (item) => !item.adminOnly || isAdmin
+  );
+
   return (
     <header className="w-full border-b border-black/5 bg-white/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
@@ -20,7 +31,7 @@ export default function Header() {
           </span>
         </Link>
         <nav className="hidden items-center gap-6 text-sm text-slate-600 md:flex">
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <Link
               key={item.label}
               href={item.href}
@@ -30,11 +41,7 @@ export default function Header() {
             </Link>
           ))}
         </nav>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600">
-            응시자
-          </div>
-        </div>
+        <UserMenu />
       </div>
     </header>
   );

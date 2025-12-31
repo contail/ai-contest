@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseServer";
 
-type RouteParams = {
-  params: { id: string };
+type RouteContext = {
+  params: Promise<{ id: string }>;
 };
 
 type DatasetPayload = {
@@ -22,28 +22,29 @@ const sanitizeUrls = (urls: string[] | undefined) => {
   );
 };
 
-export async function POST(request: Request, { params }: RouteParams) {
+export async function POST(request: Request, context: RouteContext) {
+  const { id } = await context.params;
   const body = (await request.json()) as DatasetPayload;
   const urls = sanitizeUrls(body.urls);
 
   const { data: challenge } = await supabase
-    .from("Challenge")
+    .from("challenges")
     .update({
-      datasetLabel: body.datasetLabel,
-      datasetFileName: body.datasetFileName,
-      datasetDescription: body.datasetDescription,
-      datasetDownloadUrl: body.datasetDownloadUrl ?? null,
+      dataset_label: body.datasetLabel,
+      dataset_file_name: body.datasetFileName,
+      dataset_description: body.datasetDescription,
+      dataset_download_url: body.datasetDownloadUrl ?? null,
     })
-    .eq("id", params.id)
+    .eq("id", id)
     .select("*")
     .single();
 
   if (urls.length > 0) {
-    await supabase.from("DatasetUrl").delete().eq("challengeId", params.id);
-    await supabase.from("DatasetUrl").insert(
+    await supabase.from("dataset_urls").delete().eq("challenge_id", id);
+    await supabase.from("dataset_urls").insert(
       urls.map((url) => ({
         id: crypto.randomUUID(),
-        challengeId: params.id,
+        challenge_id: id,
         url,
       }))
     );

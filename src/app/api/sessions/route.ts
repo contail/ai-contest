@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabaseServer";
 type SessionPayload = {
   nickname?: string;
   challengeId?: string;
+  userId?: string;
 };
 
 const parsePayload = (payload: string) => {
@@ -29,25 +30,32 @@ export async function POST(request: Request) {
   }
 
   const { data: existingSession } = await supabase
-    .from("SubmissionSession")
-    .select("id,challengeId,nickname,status,createdAt,submittedAt")
-    .eq("challengeId", body.challengeId)
+    .from("submission_sessions")
+    .select("id,challenge_id,user_id,nickname,status,created_at,submitted_at")
+    .eq("challenge_id", body.challengeId)
     .eq("nickname", body.nickname)
     .maybeSingle();
 
-  const session =
-    existingSession ??
-    (
-      await supabase
-        .from("SubmissionSession")
-        .insert({
-          id: crypto.randomUUID(),
-          challengeId: body.challengeId,
-          nickname: body.nickname,
-        })
-        .select("id,challengeId,nickname,status,createdAt,submittedAt")
-        .single()
-    ).data;
+  let session = existingSession;
+
+  if (!session) {
+    const { data: newSession } = await supabase
+      .from("submission_sessions")
+      .insert({
+        id: crypto.randomUUID(),
+        challenge_id: body.challengeId,
+        user_id: body.userId ?? null,
+        nickname: body.nickname,
+      })
+      .select("id,challenge_id,user_id,nickname,status,created_at,submitted_at")
+      .single();
+    session = newSession;
+  } else if (body.userId && !existingSession.user_id) {
+    await supabase
+      .from("submission_sessions")
+      .update({ user_id: body.userId })
+      .eq("id", existingSession.id);
+  }
 
   if (!session) {
     return NextResponse.json(
@@ -57,14 +65,22 @@ export async function POST(request: Request) {
   }
 
   const { data: answers } = await supabase
-    .from("Answer")
-    .select("questionId,payload")
-    .eq("sessionId", session.id);
+    .from("answers")
+    .select("question_id,payload")
+    .eq("session_id", session.id);
 
   return NextResponse.json({
-    session,
+    session: {
+      id: session.id,
+      challengeId: session.challenge_id,
+      userId: session.user_id,
+      nickname: session.nickname,
+      status: session.status,
+      createdAt: session.created_at,
+      submittedAt: session.submitted_at,
+    },
     answers: (answers ?? []).map((answer) => ({
-      questionId: answer.questionId,
+      questionId: answer.question_id,
       payload: parsePayload(answer.payload),
     })),
   });

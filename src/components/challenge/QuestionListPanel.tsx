@@ -7,7 +7,6 @@ type QuestionListPanelProps = {
   answers: Record<string, string | string[] | null>;
   onAnswerChange: (questionId: string, value: string | string[] | null) => void;
   errors?: Record<string, string>;
-  statusText?: string;
   onSubmit?: () => void;
   inputsDisabled?: boolean;
   submitDisabled?: boolean;
@@ -18,21 +17,12 @@ export default function QuestionListPanel({
   answers,
   onAnswerChange,
   errors,
-  statusText,
   onSubmit,
   inputsDisabled,
   submitDisabled,
 }: QuestionListPanelProps) {
   return (
     <section className="flex h-full flex-col gap-4">
-      <div className="border border-black/5 bg-[var(--card)] px-4 py-4 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-          질문 항목
-        </p>
-        <p className="mt-2 text-sm text-slate-600">
-          각 질문 항목에 대해 근거 중심으로 응답을 작성하세요.
-        </p>
-      </div>
       <div className="flex-1 space-y-4">
         {challenge.questions.map((question) => (
           <QuestionCard
@@ -47,7 +37,6 @@ export default function QuestionListPanel({
       </div>
       <SubmitBar
         disabled={submitDisabled}
-        statusText={statusText}
         onSubmit={onSubmit}
       />
     </section>

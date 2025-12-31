@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ChallengeDetailData } from "@/lib/challengeQueries";
+import { useAuth } from "@/components/auth/AuthProvider";
 import QuestionListPanel from "@/components/challenge/QuestionListPanel";
 
 type ContestResponsePanelProps = {
@@ -9,23 +10,6 @@ type ContestResponsePanelProps = {
 };
 
 type SaveStatus = "idle" | "saving" | "saved" | "error" | "submitted";
-
-const buildStatusText = (status: SaveStatus, timeText?: string | null) => {
-  switch (status) {
-    case "saving":
-      return "응답 저장 중";
-    case "saved":
-      return timeText
-        ? `자동 저장됨 · ${timeText}`
-        : "자동 저장됨 · 최종 제출 후 수정 불가";
-    case "error":
-      return "저장 실패 · 다시 시도하세요";
-    case "submitted":
-      return "최종 제출 완료 · 응답 수정 불가";
-    default:
-      return "응시 중";
-  }
-};
 
 const isNonEmpty = (value: string | string[] | null) => {
   if (Array.isArray(value)) {
@@ -71,7 +55,9 @@ const validateAnswer = (
 export default function ContestResponsePanel({
   challenge,
 }: ContestResponsePanelProps) {
-  const [nickname, setNickname] = useState("");
+  const { user, loading } = useAuth();
+  const nickname = user?.nickname ?? user?.email?.split("@")[0] ?? "";
+
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, string | string[] | null>>(
     {}
@@ -85,35 +71,23 @@ export default function ContestResponsePanel({
   const [confirmChecked, setConfirmChecked] = useState(false);
   const modalRef = useRef<HTMLDivElement | null>(null);
   const cancelButtonRef = useRef<HTMLButtonElement | null>(null);
-  const [resetOpen, setResetOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const stored = window.localStorage.getItem("pfct.nickname");
-    if (stored) {
-      setNickname(stored);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!nickname) return;
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("pfct.nickname", nickname);
-    }
-  }, [nickname]);
-
-  useEffect(() => {
-    if (!nickname) return;
+    if (!user || !nickname) return;
 
     const createSession = async () => {
       try {
         const response = await fetch("/api/sessions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nickname, challengeId: challenge.id }),
+          body: JSON.stringify({
+            nickname,
+            challengeId: challenge.id,
+            userId: user.id,
+          }),
         });
         if (!response.ok) {
           throw new Error("Failed to create session");
@@ -146,7 +120,7 @@ export default function ContestResponsePanel({
     };
 
     createSession();
-  }, [nickname, challenge.id]);
+  }, [user, nickname, challenge.id]);
 
   useEffect(() => {
     return () => {
@@ -238,21 +212,11 @@ export default function ContestResponsePanel({
 
   const canSubmit =
     !!sessionId &&
-    !!nickname &&
+    !!user &&
     requiredComplete &&
     !hasValidationErrors &&
     !isSubmitting &&
     !isSubmitted;
-
-  const submitDisabledReason = () => {
-    if (!nickname) return "응시자명을 먼저 입력하세요.";
-    if (!sessionId) return "응시 세션을 생성 중입니다.";
-    if (!requiredComplete) return "필수 질문 항목 응답을 완료하세요.";
-    if (hasValidationErrors) return "입력 형식을 확인하세요.";
-    if (isSubmitting) return "최종 제출 처리 중입니다.";
-    if (isSubmitted) return "최종 제출이 완료되었습니다.";
-    return null;
-  };
 
   const handleSubmit = () => {
     if (!sessionId || !canSubmit) return;
@@ -280,17 +244,16 @@ export default function ContestResponsePanel({
   };
 
   useEffect(() => {
-    if (!confirmOpen && !resetOpen) {
+    if (!confirmOpen) {
       setConfirmChecked(false);
     }
-  }, [confirmOpen, resetOpen]);
+  }, [confirmOpen]);
 
   useEffect(() => {
-    if (!confirmOpen && !resetOpen) return;
+    if (!confirmOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setConfirmOpen(false);
-        setResetOpen(false);
       }
       if (event.key === "Tab" && modalRef.current) {
         const focusable = modalRef.current.querySelectorAll<HTMLElement>(
@@ -311,47 +274,75 @@ export default function ContestResponsePanel({
     document.addEventListener("keydown", onKeyDown);
     cancelButtonRef.current?.focus();
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [confirmOpen, resetOpen]);
+  }, [confirmOpen]);
 
-  const inputsDisabled = !sessionId || isSubmitted;
+  const inputsDisabled = !sessionId || isSubmitted || !user;
   const formattedLastSavedAt =
     lastSavedAt?.toLocaleTimeString("ko-KR", {
       hour: "2-digit",
       minute: "2-digit",
     }) ?? null;
 
+  // 로딩 중 (ChallengePageContent에서도 체크하지만, 혹시 모를 상황 대비)
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-4">
+        <section className="border border-black/5 bg-[var(--card)] p-4 shadow-sm">
+          <div className="h-20 animate-pulse rounded bg-slate-100" />
+        </section>
+      </div>
+    );
+  }
+
+  // 로그인 안된 상태는 ChallengePageContent에서 처리하므로 여기선 간단히 표시
+  if (!user) {
+    return (
+      <div className="flex flex-col gap-4">
+        <QuestionListPanel
+          challenge={challenge}
+          answers={{}}
+          onAnswerChange={() => {}}
+          errors={{}}
+          onSubmit={() => {}}
+          inputsDisabled={true}
+          submitDisabled={true}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-4">
       {confirmOpen ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
         >
           <div
             ref={modalRef}
-            className="w-full max-w-md border border-slate-200 bg-white p-6 shadow-lg"
+            className="w-full max-w-sm rounded-[var(--radius-lg)] bg-white p-6 shadow-[var(--shadow-lg)]"
           >
-            <p className="text-sm font-semibold text-slate-900">
+            <p className="text-base font-bold text-[var(--gray-900)]">
               최종 제출 확인
             </p>
-            <p className="mt-3 text-sm leading-relaxed text-slate-600">
+            <p className="mt-3 text-sm leading-relaxed text-[var(--gray-600)]">
               최종 제출 이후에는 응답을 수정할 수 없습니다. 모든 질문 항목을
               검토했는지 확인하세요.
             </p>
-            <label className="mt-4 flex items-start gap-2 text-sm text-slate-600">
+            <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-[var(--radius-sm)] border border-[var(--border-strong)] p-3 text-sm text-[var(--gray-700)] transition hover:border-[var(--brand)]">
               <input
                 type="checkbox"
-                className="mt-1 h-4 w-4 accent-[var(--brand)]"
+                className="mt-0.5 h-4 w-4 accent-[var(--brand)]"
                 checked={confirmChecked}
                 onChange={(event) => setConfirmChecked(event.target.checked)}
               />
               모든 질문 항목을 검토했음을 확인합니다.
             </label>
-            <div className="mt-6 flex items-center justify-end gap-3">
+            <div className="mt-6 flex gap-3">
               <button
                 type="button"
-                className="border border-slate-200 px-4 py-2 text-sm text-slate-600"
+                className="flex-1 rounded-[var(--radius-sm)] border border-[var(--border-strong)] px-4 py-2.5 text-sm font-medium text-[var(--gray-700)] transition hover:bg-[var(--gray-50)]"
                 onClick={() => setConfirmOpen(false)}
                 ref={cancelButtonRef}
               >
@@ -359,7 +350,7 @@ export default function ContestResponsePanel({
               </button>
               <button
                 type="button"
-                className="bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-white"
+                className="flex-1 rounded-[var(--radius-sm)] bg-[var(--brand)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--brand-dark)] disabled:bg-[var(--gray-200)] disabled:text-[var(--gray-500)]"
                 onClick={handleConfirmSubmit}
                 disabled={isSubmitting || !confirmChecked}
               >
@@ -369,104 +360,35 @@ export default function ContestResponsePanel({
           </div>
         </div>
       ) : null}
-      {resetOpen ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div
-            ref={modalRef}
-            className="w-full max-w-md border border-slate-200 bg-white p-6 shadow-lg"
-          >
-            <p className="text-sm font-semibold text-slate-900">
-              응답 초기화 요청
-            </p>
-            <p className="mt-3 text-sm leading-relaxed text-slate-600">
-              이 작업은 응시자 본인 요청만으로 즉시 반영되지 않습니다. 담당자
-              확인 후 초기화가 진행됩니다.
-            </p>
-            <div className="mt-6 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                className="border border-slate-200 px-4 py-2 text-sm text-slate-600"
-                onClick={() => setResetOpen(false)}
-              >
-                닫기
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-      <section className="border border-black/5 bg-[var(--card)] p-4 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-          응시자 정보
-        </p>
-        <div className="mt-3 flex flex-col gap-2 md:flex-row md:items-center">
-          <label className="text-sm text-slate-600 md:w-32">응시자명</label>
-          <input
-            type="text"
-            value={nickname}
-            onChange={(event) => setNickname(event.target.value)}
-            placeholder="닉네임을 입력하세요."
-            className="w-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-[var(--brand)] focus:outline-none focus:ring-1 focus:ring-[var(--brand)]/30"
-          />
-        </div>
-        <p className="mt-2 text-xs text-slate-500">
-          응시자명은 세션 식별 목적으로만 사용됩니다.
-        </p>
-      </section>
 
       {restored ? (
-        <div className="border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+        <div className="flex items-center gap-2 rounded-[var(--radius-sm)] bg-[var(--lime-50)] px-4 py-3 text-sm text-[var(--lime-700)]">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
           기존 응답이 복원되었습니다.
           {formattedLastSavedAt ? (
-            <span className="ml-2 text-xs text-emerald-800">
-              마지막 저장 {formattedLastSavedAt}
+            <span className="text-xs text-[var(--lime-600)]">
+              · 마지막 저장 {formattedLastSavedAt}
             </span>
           ) : null}
         </div>
       ) : null}
 
       {status === "error" ? (
-        <div className="border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-          저장 중 문제가 발생했습니다. 네트워크 상태를 확인한 뒤 다시
-          입력해 주세요.
+        <div className="flex items-center gap-2 rounded-[var(--radius-sm)] bg-red-50 px-4 py-3 text-sm text-red-600">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          저장 중 문제가 발생했습니다. 네트워크 상태를 확인한 뒤 다시 입력해 주세요.
         </div>
       ) : null}
-
-      <section className="border border-black/5 bg-[var(--card)] px-4 py-4 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-          응시 정책
-        </p>
-        <p className="mt-2 text-sm text-slate-600">
-          최종 제출 이후에는 응답 수정이 제한되며, 재응시는 별도 안내에
-          따릅니다.
-        </p>
-        <div className="mt-3 flex items-center gap-3 text-sm text-slate-600">
-          <span>응시 상태</span>
-          <span className="border border-slate-200 px-2 py-1 text-xs">
-            {isSubmitted ? "최종 제출 완료" : "응시 중"}
-          </span>
-        </div>
-        <button
-          type="button"
-          className="mt-4 border border-slate-200 px-3 py-2 text-xs text-slate-600"
-          onClick={() => setResetOpen(true)}
-          disabled={!sessionId || isSubmitted}
-        >
-          응답 초기화 요청
-        </button>
-      </section>
 
       <QuestionListPanel
         challenge={challenge}
         answers={answers}
         onAnswerChange={handleAnswerChange}
         errors={mergedErrors}
-        statusText={
-          submitDisabledReason() ?? buildStatusText(status, formattedLastSavedAt)
-        }
         onSubmit={handleSubmit}
         inputsDisabled={inputsDisabled}
         submitDisabled={!canSubmit}

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseServer";
 
-type RouteParams = {
-  params: { id: string };
+type RouteContext = {
+  params: Promise<{ id: string }>;
 };
 
 type QuestionInput = {
@@ -17,16 +17,17 @@ type QuestionsPayload = {
   questions?: QuestionInput[];
 };
 
-export async function POST(request: Request, { params }: RouteParams) {
+export async function POST(request: Request, context: RouteContext) {
+  const { id } = await context.params;
   const body = (await request.json()) as QuestionsPayload;
   const questions = body.questions ?? [];
 
-  await supabase.from("Question").delete().eq("challengeId", params.id);
+  await supabase.from("questions").delete().eq("challenge_id", id);
   if (questions.length > 0) {
-    await supabase.from("Question").insert(
+    await supabase.from("questions").insert(
       questions.map((question) => ({
         id: crypto.randomUUID(),
-        challengeId: params.id,
+        challenge_id: id,
         order: question.order,
         type: question.type,
         prompt: question.prompt,
