@@ -1,0 +1,159 @@
+import Header from "@/components/site/Header";
+import { getAnswerKeyByChallengeId } from "@/lib/mockData";
+import { prisma } from "@/lib/prisma";
+
+const parseAnswerPayload = (payload: string): string | string[] => {
+  const trimmed = payload.trim();
+  if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((item): item is string => typeof item === "string");
+      }
+    } catch {
+      return payload;
+    }
+  }
+  return payload;
+};
+
+const isEqualAnswer = (
+  actual: string | string[] | undefined,
+  expected: string | string[]
+) => {
+  if (!actual) return false;
+  if (Array.isArray(expected)) {
+    const actualArray = Array.isArray(actual) ? actual : [actual];
+    const normalizedActual = [...new Set(actualArray.map((item) => item.trim()))]
+      .filter(Boolean)
+      .sort();
+    const normalizedExpected = [...new Set(expected.map((item) => item.trim()))]
+      .filter(Boolean)
+      .sort();
+    if (normalizedActual.length !== normalizedExpected.length) return false;
+    return normalizedExpected.every(
+      (item, index) => normalizedActual[index] === item
+    );
+  }
+  return (Array.isArray(actual) ? actual.join(",") : actual).trim() ===
+    expected.trim();
+};
+
+export default async function ResultsPage() {
+  const sessions = await prisma.submissionSession.findMany({
+    include: {
+      challenge: true,
+      answers: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const grouped = sessions.reduce<Record<string, typeof sessions>>(
+    (acc, session) => {
+      const key = session.challengeId;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(session);
+      return acc;
+    },
+    {}
+  );
+
+  return (
+    <div className="min-h-screen">
+      <Header />
+      <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 pb-16 pt-8">
+        <section className="border border-black/5 bg-[var(--card)] px-6 py-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            결과 요약
+          </p>
+          <h1 className="mt-2 text-2xl font-semibold text-slate-900">
+            응시 세션 현황
+          </h1>
+          <p className="mt-2 text-sm text-slate-600">
+            제출 상태와 응답 수를 요약합니다.
+          </p>
+        </section>
+
+        {sessions.length === 0 ? (
+          <section className="border border-black/5 bg-[var(--card)] px-6 py-8 text-sm text-slate-600 shadow-sm">
+            아직 생성된 응시 세션이 없습니다.
+          </section>
+        ) : (
+          Object.entries(grouped).map(([challengeId, items]) => (
+            <section
+              key={challengeId}
+              className="border border-black/5 bg-[var(--card)] px-6 py-5 shadow-sm"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                    {items[0]?.challenge.title ?? "콘테스트"}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-600">
+                    총 {items.length}건
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 divide-y divide-slate-200">
+                {items.map((session) => {
+                  const answerKey = getAnswerKeyByChallengeId(
+                    session.challengeId
+                  );
+                  const answerMap = new Map(
+                    session.answers.map((answer) => [
+                      answer.questionId,
+                      parseAnswerPayload(answer.payload),
+                    ])
+                  );
+                  const totalQuestions = answerKey
+                    ? Object.keys(answerKey).length
+                    : 0;
+                  const correctCount = answerKey
+                    ? Object.entries(answerKey).reduce((count, [id, expected]) =>
+                        isEqualAnswer(answerMap.get(id), expected)
+                          ? count + 1
+                          : count,
+                      0)
+                    : 0;
+
+                  return (
+                    <div
+                      key={session.id}
+                      className="flex flex-col gap-2 py-3 text-sm text-slate-600 md:flex-row md:items-center md:justify-between"
+                    >
+                      <div>
+                        <p className="text-slate-900">{session.nickname}</p>
+                        <p className="text-xs text-slate-500">
+                          세션 {session.id.slice(0, 8)}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs">
+                        <span className="border border-slate-200 px-2 py-1">
+                          {session.status === "SUBMITTED"
+                            ? "최종 제출"
+                            : "응시 중"}
+                        </span>
+                        {answerKey ? (
+                          <span className="border border-emerald-100 bg-emerald-50 px-2 py-1 text-emerald-700">
+                            정답 {correctCount}/{totalQuestions}
+                          </span>
+                        ) : (
+                          <span className="border border-slate-200 px-2 py-1 text-slate-500">
+                            정답 키 없음
+                          </span>
+                        )}
+                        <span className="text-slate-500">
+                          응답 {session.answers.length}개
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          ))
+        )}
+      </main>
+    </div>
+  );
+}

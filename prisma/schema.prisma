@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Challenge {
+  id                 String      @id @default(cuid())
+  title              String
+  subtitle           String
+  summary            String
+  tags               String
+  badge              String?
+  heroCopy           String?
+  description        String
+  cautionText        String
+  datasetLabel       String
+  datasetFileName    String
+  datasetDescription String
+  datasetDownloadUrl String?
+  restrictDatasetUrl Boolean     @default(false)
+  isPublished        Boolean     @default(false)
+  createdAt          DateTime    @default(now())
+  questions          Question[]
+  datasetUrls        DatasetUrl[]
+  sessions           SubmissionSession[]
+}
+
+model DatasetUrl {
+  id          String    @id @default(cuid())
+  challengeId String
+  url         String    @unique
+  createdAt   DateTime  @default(now())
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+}
+
+model Question {
+  id          String       @id @default(cuid())
+  challengeId String
+  order       Int
+  type        String
+  prompt      String
+  options     String?
+  required    Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  challenge   Challenge    @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  answers     Answer[]
+
+  @@unique([challengeId, order])
+}
+
+model SubmissionSession {
+  id          String        @id @default(cuid())
+  challengeId String
+  nickname    String
+  status      String        @default("DRAFT")
+  createdAt   DateTime      @default(now())
+  submittedAt DateTime?
+  challenge   Challenge     @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  answers     Answer[]
+
+  @@unique([challengeId, nickname])
+}
+
+model Answer {
+  id         String             @id @default(cuid())
+  sessionId  String
+  questionId String
+  payload    String
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+  session    SubmissionSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question   Question           @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, questionId])
+}
