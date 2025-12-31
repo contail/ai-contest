@@ -1,4 +1,4 @@
-import ChallengeCard from "@/components/challenge/ChallengeCard";
+import ChallengeList from "@/components/challenge/ChallengeList";
 import Header from "@/components/site/Header";
 import { getChallenges } from "@/lib/challengeQueries";
 
@@ -44,11 +44,7 @@ export default async function Home() {
               각 챌린지의 맥락과 참고 데이터를 확인한 뒤 응시를 진행하세요.
             </p>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {challenges.map((challenge) => (
-              <ChallengeCard key={challenge.id} challenge={challenge} />
-            ))}
-          </div>
+          <ChallengeList challenges={challenges} />
         </section>
       </main>
     </div>
