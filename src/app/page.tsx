@@ -25,9 +25,8 @@ export default async function Home() {
             <h1 className="text-2xl font-bold text-white md:text-3xl">
               AI 챌린지에 도전하세요
             </h1>
-            <p className="max-w-md text-sm leading-relaxed text-[var(--gray-400)]">
-              데이터 분석, 로그 검증 등 다양한 AI 설계형 콘테스트에
-              참여하고 실력을 증명하세요.
+            <p className="text-sm text-[var(--gray-400)]">
+              데이터 분석, 로그 검증 등 다양한 AI 설계형 콘테스트에 참여하고 실력을 증명하세요.
             </p>
           </div>
         </section>
