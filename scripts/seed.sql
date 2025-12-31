@@ -33,7 +33,15 @@ VALUES
    '배달 플랫폼의 효율성을 높이기 위해 도입된 AI 스마트 배차 엔진 로그를 분석합니다. 제공된 라이더 정보와 배차 로그(CSV/JSON)를 바탕으로 규칙이 제대로 적용되었는지 판단하고, 주어진 질문에 답하세요.',
    '모든 계산은 제공된 데이터셋 기준으로만 수행합니다. 제시된 규칙 외의 가정을 추가하지 마세요.',
    '배차 로그 3종', 'delivery_data.zip', 'rider_info.json, dispatch_log.csv, pending_orders.csv',
-   '/datasets/delivery_data.zip', false, true);
+   '/datasets/delivery_data.zip', false, true),
+
+  ('drone-multimodal', '드론 AI 비상 상황 판단 챌린지', '멀티모달 분석',
+   '자율주행 드론의 비행 로그와 카메라 이미지를 분석하여 AI의 비상 판단이 적절했는지 평가합니다.',
+   '["멀티모달","센서 분석","AI 판단"]', 'N',
+   '자율주행 드론 관제 센터의 엔지니어로서, 비행 중 발생한 비상 상황(Event)을 분석해야 합니다. AI가 현장에서 수집한 멀티모달 데이터(시각 정보 + 센서 로그)를 상호 검증하여, AI의 판단이 적절했는지 평가해 주세요.',
+   '센서 로그와 이미지를 함께 분석해야 정확한 판단이 가능합니다. drone_specs.json의 안전 규칙을 참고하세요.',
+   '드론 비행 로그 및 이미지', 'drone_log_data.zip', '3개 이벤트의 센서 로그(JSON)와 현장 이미지(PNG), 드론 사양서 포함',
+   '/datasets/drone_log_data.zip', false, true);
 
 -- =============================================================================
 -- Questions
@@ -76,6 +84,21 @@ INSERT INTO questions (id, challenge_id, "order", type, prompt, options, require
   ('pfct-ocr-q5', 'pfct-ocr', 5, 'single',
    '모든 배차 완료 후, 남은 적재 용량이 큰 순서대로 라이더를 정렬한 결과는 무엇인가요?',
    '["정스피드 > 김철수 > 최신속 > 이영희 = 박민수","정스피드 > 이영희 > 박민수 > 김철수 > 최신속","김철수 > 정스피드 > 최신속 > 이영희 = 박민수","최신속 > 이영희 > 박민수 > 정스피드 > 김철수"]',
+   true);
+
+-- drone-multimodal questions
+INSERT INTO questions (id, challenge_id, "order", type, prompt, options, required) VALUES
+  ('drone-q1', 'drone-multimodal', 1, 'SINGLE',
+   '14:22:05 주택가 골목 비행 중 발생한 EMERGENCY_STOP 이벤트입니다. event_001_sensor.json과 event_001_vision.png를 대조하여 AI의 판단 근거를 분석하세요.',
+   '["과잉 반응: 장애물이 작아 회피 가능했음","적절한 판단: 생명체 식별 및 안전거리 미확보로 정지함","센서 오류: 이미지와 라이다 거리값 불일치","판단 불가: 조도 부족으로 식별 불가"]',
+   true),
+  ('drone-q2', 'drone-multimodal', 2, 'SINGLE',
+   '목적지 상공(Target_Zone_7B)에 도착했으나 착륙하지 않고 회항했습니다. event_002_sensor.json과 event_002_vision.png를 분석하여 AI가 착륙을 포기한 기술적 원인은 무엇입니까?',
+   '["GPS 신호 미약으로 위치 특정 실패","고도 센서 오작동 (지상으로 오인)","표면 스캔 결과 불안정(UNSTABLE) - 장애물 감지","배터리 잔량 부족 (Critical Low)"]',
+   true),
+  ('drone-q3', 'drone-multimodal', 3, 'SINGLE',
+   '맑은 날씨(Clear)임에도 VISUAL_ERROR 경고가 발생했습니다. event_003_sensor.json과 event_003_vision.png를 분석하여 엔지니어로서 가장 먼저 수행해야 할 조치는 무엇입니까?',
+   '["기상청 API 서버 점검 요청","즉시 복귀 명령 (시각 센서 신뢰도 저하)","강제 착륙 시도 (현 위치)","API 데이터 신뢰 후 계속 비행"]',
    true);
 
 -- =============================================================================
@@ -200,7 +223,11 @@ INSERT INTO answer_keys (question_id, answer) VALUES
   ('pfct-ocr-q2', '정스피드 > 김철수 > 이영희 > 박민수 > 최신속'),
   ('pfct-ocr-q3', '서초구'),
   ('pfct-ocr-q4', '라이더의 최대 적재 용량 초과'),
-  ('pfct-ocr-q5', '정스피드 > 김철수 > 최신속 > 이영희 = 박민수');
+  ('pfct-ocr-q5', '정스피드 > 김철수 > 최신속 > 이영희 = 박민수'),
+  -- 드론 챌린지 정답
+  ('drone-q1', '적절한 판단: 생명체 식별 및 안전거리 미확보로 정지함'),
+  ('drone-q2', '표면 스캔 결과 불안정(UNSTABLE) - 장애물 감지'),
+  ('drone-q3', '즉시 복귀 명령 (시각 센서 신뢰도 저하)');
 
 COMMIT;
 

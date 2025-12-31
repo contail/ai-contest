@@ -198,6 +198,75 @@ export const challenges: Challenge[] = [
       },
     ],
   },
+  {
+    id: "drone-multimodal",
+    title: "드론 AI 비상 상황 판단 챌린지",
+    subtitle: "멀티모달 분석",
+    summary:
+      "자율주행 드론의 비행 로그와 카메라 이미지를 분석하여 AI의 비상 판단이 적절했는지 평가합니다.",
+    tags: ["멀티모달", "센서 분석", "AI 판단"],
+    badge: "N",
+    heroCopy: "드론 AI의 판단을 검증하세요",
+    description:
+      "자율주행 드론 관제 센터의 엔지니어로서, 비행 중 발생한 비상 상황(Event)을 분석해야 합니다. AI가 현장에서 수집한 멀티모달 데이터(시각 정보 + 센서 로그)를 상호 검증하여, AI의 판단이 적절했는지 평가해 주세요.",
+    cautionText:
+      "센서 로그와 이미지를 함께 분석해야 정확한 판단이 가능합니다. drone_specs.json의 안전 규칙을 참고하세요.",
+    scoringSummary: "총점: 100점",
+    scoringItems: [
+      "문항 1: 30점 (안전 수칙 판단)",
+      "문항 2: 30점 (데이터 매칭 능력)",
+      "문항 3: 40점 (우선순위 판단)",
+    ],
+    datasetLabel: "드론 비행 로그 및 이미지",
+    datasetFileName: "drone_log_data.zip",
+    datasetDescription:
+      "3개 이벤트의 센서 로그(JSON)와 현장 이미지(PNG), 드론 사양서 포함",
+    datasetDownloadUrl: "/datasets/drone_log_data.zip",
+    questions: [
+      {
+        id: "drone-q1",
+        order: 1,
+        type: "single",
+        prompt:
+          "14:22:05 주택가 골목 비행 중 발생한 EMERGENCY_STOP 이벤트입니다. event_001_sensor.json과 event_001_vision.png를 대조하여 AI의 판단 근거를 분석하세요.",
+        options: [
+          "과잉 반응: 장애물이 작아 회피 가능했음",
+          "적절한 판단: 생명체 식별 및 안전거리 미확보로 정지함",
+          "센서 오류: 이미지와 라이다 거리값 불일치",
+          "판단 불가: 조도 부족으로 식별 불가",
+        ],
+        required: true,
+      },
+      {
+        id: "drone-q2",
+        order: 2,
+        type: "single",
+        prompt:
+          "목적지 상공(Target_Zone_7B)에 도착했으나 착륙하지 않고 회항했습니다. event_002_sensor.json과 event_002_vision.png를 분석하여 AI가 착륙을 포기한 기술적 원인은 무엇입니까?",
+        options: [
+          "GPS 신호 미약으로 위치 특정 실패",
+          "고도 센서 오작동 (지상으로 오인)",
+          "표면 스캔 결과 불안정(UNSTABLE) - 장애물 감지",
+          "배터리 잔량 부족 (Critical Low)",
+        ],
+        required: true,
+      },
+      {
+        id: "drone-q3",
+        order: 3,
+        type: "single",
+        prompt:
+          "맑은 날씨(Clear)임에도 VISUAL_ERROR 경고가 발생했습니다. event_003_sensor.json과 event_003_vision.png를 분석하여 엔지니어로서 가장 먼저 수행해야 할 조치는 무엇입니까?",
+        options: [
+          "기상청 API 서버 점검 요청",
+          "즉시 복귀 명령 (시각 센서 신뢰도 저하)",
+          "강제 착륙 시도 (현 위치)",
+          "API 데이터 신뢰 후 계속 비행",
+        ],
+        required: true,
+      },
+    ],
+  },
 ];
 
 export const getChallengeById = (id: string): Challenge => {
