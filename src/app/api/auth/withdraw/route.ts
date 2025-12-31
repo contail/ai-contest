@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { supabaseServer } from "@/lib/supabaseServer";
+import { supabase } from "@/lib/supabase";
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,31 +10,31 @@ const supabaseAdmin = createClient(
 
 export async function POST() {
   try {
-    const { data: { user } } = await supabaseServer.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // 1. 사용자의 답변 삭제
-    await supabaseServer
+    await supabase
       .from("answers")
       .delete()
       .in("session_id", (
-        await supabaseServer
+        await supabase
           .from("submission_sessions")
           .select("id")
           .eq("user_id", user.id)
       ).data?.map((s) => s.id) ?? []);
 
     // 2. 사용자의 세션 삭제
-    await supabaseServer
+    await supabase
       .from("submission_sessions")
       .delete()
       .eq("user_id", user.id);
 
     // 3. users 테이블에서 삭제
-    await supabaseServer
+    await supabase
       .from("users")
       .delete()
       .eq("id", user.id);
