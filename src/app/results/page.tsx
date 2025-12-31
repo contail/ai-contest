@@ -2,6 +2,7 @@ import Header from "@/components/site/Header";
 import { AdminGuard } from "@/components/auth/AdminGuard";
 import { getAnswerKeyByChallengeId } from "@/lib/mockData";
 import { supabase } from "@/lib/supabaseServer";
+import SessionResetButton from "@/components/admin/SessionResetButton";
 
 const parseAnswerPayload = (payload: string): string | string[] => {
   const trimmed = payload.trim();
@@ -170,23 +171,27 @@ async function ResultsContent() {
                       </p>
                     </div>
                     <div className="flex items-center gap-3 text-xs">
-                      <span className="border border-slate-200 px-2 py-1">
+                      <span className="rounded-[var(--radius-sm)] border border-slate-200 px-2 py-1">
                         {session.status === "SUBMITTED"
                           ? "최종 제출"
                           : "응시 중"}
                       </span>
                       {answerKey ? (
-                        <span className="border border-emerald-100 bg-emerald-50 px-2 py-1 text-emerald-700">
+                        <span className="rounded-[var(--radius-sm)] border border-[var(--lime-200)] bg-[var(--lime-50)] px-2 py-1 text-[var(--lime-700)]">
                           정답 {correctCount}/{totalQuestions}
                         </span>
                       ) : (
-                        <span className="border border-slate-200 px-2 py-1 text-slate-500">
+                        <span className="rounded-[var(--radius-sm)] border border-slate-200 px-2 py-1 text-slate-500">
                           정답 키 없음
                         </span>
                       )}
                       <span className="text-slate-500">
                         응답 {answersBySession.get(session.id)?.length ?? 0}개
                       </span>
+                      <SessionResetButton
+                        sessionId={session.id}
+                        nickname={session.nickname}
+                      />
                     </div>
                   </div>
                 );
