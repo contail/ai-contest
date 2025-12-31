@@ -2,6 +2,9 @@ import ChallengeCard from "@/components/challenge/ChallengeCard";
 import Header from "@/components/site/Header";
 import { getChallenges } from "@/lib/challengeQueries";
 
+// DB에서 실시간으로 가져오도록 동적 렌더링 강제
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const challenges = await getChallenges();
 
