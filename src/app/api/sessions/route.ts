@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       .select("id,challenge_id,user_id,nickname,status,created_at,submitted_at")
       .single();
     session = newSession;
-  } else if (body.userId && !existingSession.user_id) {
+  } else if (existingSession && body.userId && !existingSession.user_id) {
     await supabase
       .from("submission_sessions")
       .update({ user_id: body.userId })

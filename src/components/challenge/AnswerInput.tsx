@@ -86,7 +86,7 @@ export default function AnswerInput({
         <div className="mt-3">
           <input
             type="url"
-            placeholder={question.helperText ?? "https://"}
+            placeholder="https://"
             className={baseInputClass}
             disabled={disabled}
             value={normalizeStringValue(value)}
@@ -100,7 +100,7 @@ export default function AnswerInput({
         <div className="mt-3">
           <textarea
             rows={4}
-            placeholder={question.helperText ?? "URL을 입력하세요."}
+            placeholder="URL을 입력하세요 (줄바꿈으로 구분)"
             className={baseInputClass}
             disabled={disabled}
             value={normalizeStringValue(value)}
