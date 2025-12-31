@@ -36,7 +36,7 @@ export const challenges: Challenge[] = [
   {
     id: "pfct-news",
     title: "PFCT Blog Insight",
-    subtitle: "PFCT AI Contest Lab",
+    subtitle: "AI Challenge Hub",
     summary:
       "PFCT 블로그 콘텐츠를 기반으로 카테고리·주제 인식과 근거 판별 능력을 확인하는 콘테스트.",
     tags: ["리서치", "콘텐츠 분석", "분류"],
@@ -105,7 +105,7 @@ export const challenges: Challenge[] = [
   {
     id: "pfct-ocr",
     title: "스마트 배달 배차 분석 챌린지",
-    subtitle: "PFCT AI Contest Lab",
+    subtitle: "AI Challenge Hub",
     summary:
       "AI 스마트 배차 엔진의 로그를 분석하여 규칙 준수 여부와 배차 효율을 검증하는 콘테스트.",
     tags: ["운영 분석", "로그 검증", "배차 최적화"],

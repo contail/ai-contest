@@ -24,6 +24,7 @@ type AuthContextType = {
   signInWithGoogle: (redirectTo?: string) => Promise<void>;
   signInWithPassword: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  withdraw: () => Promise<{ error: string | null }>;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -32,6 +33,7 @@ const AuthContext = createContext<AuthContextType>({
   signInWithGoogle: async () => {},
   signInWithPassword: async () => ({ error: null }),
   signOut: async () => {},
+  withdraw: async () => ({ error: null }),
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -129,8 +131,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.location.href = "/";
   };
 
+  const withdraw = async () => {
+    try {
+      const res = await fetch("/api/auth/withdraw", { method: "POST" });
+      if (!res.ok) {
+        return { error: "탈퇴 처리 중 오류가 발생했습니다." };
+      }
+      await supabaseClient.auth.signOut();
+      setUser(null);
+      window.location.href = "/";
+      return { error: null };
+    } catch {
+      return { error: "탈퇴 처리 중 오류가 발생했습니다." };
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithPassword, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithPassword, signOut, withdraw }}>
       {children}
     </AuthContext.Provider>
   );

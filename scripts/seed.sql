@@ -19,7 +19,7 @@ DELETE FROM challenges;
 
 INSERT INTO challenges (id, title, subtitle, summary, tags, badge, description, caution_text, dataset_label, dataset_file_name, dataset_description, dataset_download_url, restrict_dataset_url, is_published)
 VALUES
-  ('pfct-news', 'PFCT Blog Insight', 'PFCT AI Contest Lab',
+  ('pfct-news', 'PFCT Blog Insight', 'AI Challenge Hub',
    'PFCT 블로그 콘텐츠를 기반으로 카테고리·주제 인식과 근거 판별 능력을 확인하는 콘테스트.',
    '["리서치","콘텐츠 분석","분류"]', 'N',
    'PFCT 블로그 데이터셋을 기반으로 카테고리와 주제를 정확히 구분하는 능력을 확인합니다. 제공된 URL 목록을 바탕으로 각 질문 항목에 맞는 근거를 선택하세요.',
@@ -27,7 +27,7 @@ VALUES
    'PFCT 블로그 100건', 'pfct_blog_urls_100.txt', 'PFCT 블로그 게시글 URL 목록',
    NULL, false, true),
 
-  ('pfct-ocr', '스마트 배달 배차 분석 챌린지', 'PFCT AI Contest Lab',
+  ('pfct-ocr', '스마트 배달 배차 분석 챌린지', 'AI Challenge Hub',
    'AI 스마트 배차 엔진의 로그를 분석하여 규칙 준수 여부와 배차 효율을 검증하는 콘테스트.',
    '["운영 분석","로그 검증","배차 최적화"]', 'N',
    '배달 플랫폼의 효율성을 높이기 위해 도입된 AI 스마트 배차 엔진 로그를 분석합니다. 제공된 라이더 정보와 배차 로그(CSV/JSON)를 바탕으로 규칙이 제대로 적용되었는지 판단하고, 주어진 질문에 답하세요.',

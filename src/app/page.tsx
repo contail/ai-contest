@@ -19,7 +19,7 @@ export default async function Home() {
           
           <div className="space-y-3 pl-4">
             <span className="inline-block rounded-md bg-[var(--lime-500)] px-3 py-1 text-xs font-semibold text-white">
-              PFCT AI Contest Lab
+              AI Challenge Hub
             </span>
             <h1 className="text-2xl font-bold text-[var(--gray-900)] md:text-3xl">
               AI 챌린지에 도전하세요

@@ -25,9 +25,9 @@ export default function Header() {
           href="/"
           className="flex items-center gap-3 text-base font-semibold tracking-[0.14em] text-slate-900"
         >
-          <span className="border-b-2 border-[var(--brand)] pb-1">PFCT</span>
+          <span className="border-b-2 border-[var(--brand)] pb-1">AI Challenge</span>
           <span className="text-xs font-medium text-slate-500">
-            AI Contest Lab
+            Hub
           </span>
         </Link>
         <nav className="hidden items-center gap-6 text-sm text-slate-600 md:flex">
