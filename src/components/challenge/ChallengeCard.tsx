@@ -49,9 +49,6 @@ export default function ChallengeCard({ challenge }: ChallengeCardProps) {
         <h3 className="text-lg font-bold text-[var(--gray-900)] group-hover:text-[var(--brand-strong)] transition-colors">
           {challenge.title}
         </h3>
-        <p className="text-sm leading-relaxed text-[var(--gray-600)] line-clamp-2">
-          {challenge.summary}
-        </p>
 
         {/* 태그 */}
         <div className="flex flex-wrap gap-1.5">
