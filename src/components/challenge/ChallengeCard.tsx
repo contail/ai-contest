@@ -63,7 +63,9 @@ export default function ChallengeCard({ challenge, completed }: ChallengeCardPro
                 {completed.score}/{completed.totalQuestions}
               </p>
               <p className="text-xs text-[var(--gray-400)]">
-                {Math.round((completed.score / completed.totalQuestions) * 100)}% 정답
+                {completed.totalQuestions > 0 
+                  ? Math.round((completed.score / completed.totalQuestions) * 100) 
+                  : 0}% 정답
               </p>
             </div>
           ) : (
