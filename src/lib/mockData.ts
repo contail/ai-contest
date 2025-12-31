@@ -76,23 +76,21 @@ export const challenges: Challenge[] = [
         order: 2,
         type: "short",
         prompt:
-          "100개 블로그 본문에서 '피플펀드'라는 단어가 총 몇 회 등장하나요? (숫자만 입력, 크롤링 필요)",
+          "본문에서 '연체율'이라는 단어가 가장 많이 등장하는 글의 slug는?",
         required: true,
       },
       {
         id: "pfct-news-q3",
         order: 3,
         type: "short",
-        prompt:
-          "100개 블로그 중 본문에 '머신러닝' 또는 '딥러닝'이 언급된 글은 몇 개인가요? (숫자만 입력, 크롤링 필요)",
+        prompt: "본문에 '2024년'이라는 문구가 포함된 글은 총 몇 개인가요?",
         required: true,
       },
       {
         id: "pfct-news-q4",
         order: 4,
         type: "short",
-        prompt:
-          "100개 블로그 중 본문 길이가 1000자 미만인 글은 몇 개인가요? (숫자만 입력, 크롤링 필요)",
+        prompt: "100개 블로그 중 본문 길이가 가장 짧은 글의 slug는?",
         required: true,
       },
       {
@@ -100,7 +98,7 @@ export const challenges: Challenge[] = [
         order: 5,
         type: "short",
         prompt:
-          "100개 블로그 중 본문에 '2024년'이라는 문구가 포함된 글은 몇 개인가요? (숫자만 입력, 크롤링 필요)",
+          "100개 블로그 본문에서 '피플펀드'라는 단어가 총 몇 회 등장하나요?",
         required: true,
       },
     ],
