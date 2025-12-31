@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { ChallengeDetailData } from "@/lib/challengeQueries";
 import { useAuth } from "@/components/auth/AuthProvider";
 import QuestionListPanel from "@/components/challenge/QuestionListPanel";
-import ResultScreen from "@/components/challenge/ResultScreen";
 
 type ContestResponsePanelProps = {
   challenge: ChallengeDetailData;
@@ -57,6 +57,7 @@ export default function ContestResponsePanel({
   challenge,
 }: ContestResponsePanelProps) {
   const { user, loading } = useAuth();
+  const router = useRouter();
   const nickname = user?.nickname ?? user?.email?.split("@")[0] ?? "";
 
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -74,8 +75,6 @@ export default function ContestResponsePanel({
   const cancelButtonRef = useRef<HTMLButtonElement | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [score, setScore] = useState<number | null>(null);
-  const [totalQuestions, setTotalQuestions] = useState<number | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -96,16 +95,15 @@ export default function ContestResponsePanel({
           throw new Error("Failed to create session");
         }
         const data = (await response.json()) as {
-          session: { id: string; status: string; score?: number; total_questions?: number };
+          session: { id: string; status: string };
           answers: { questionId: string; payload: string | string[] | null }[];
         };
         setSessionId(data.session.id);
         const submitted = data.session.status === "SUBMITTED";
         if (submitted) {
-          setIsSubmitted(true);
-          setStatus("submitted");
-          if (data.session.score !== undefined) setScore(data.session.score);
-          if (data.session.total_questions !== undefined) setTotalQuestions(data.session.total_questions);
+          // 이미 제출된 경우 메인으로 리다이렉트
+          router.push("/");
+          return;
         }
         if (data.answers?.length) {
           const restored: Record<string, string | string[] | null> = {};
@@ -239,13 +237,8 @@ export default function ContestResponsePanel({
       if (!response.ok) {
         throw new Error("Failed to submit");
       }
-      const data = (await response.json()) as {
-        session: { score?: number; totalQuestions?: number };
-      };
-      setIsSubmitted(true);
-      setStatus("submitted");
-      if (data.session?.score !== undefined) setScore(data.session.score);
-      if (data.session?.totalQuestions !== undefined) setTotalQuestions(data.session.totalQuestions);
+      // 제출 완료 후 메인으로 리다이렉트
+      router.push("/");
     } catch {
       setStatus("error");
     } finally {
@@ -318,17 +311,6 @@ export default function ContestResponsePanel({
           submitDisabled={true}
         />
       </div>
-    );
-  }
-
-  // 제출 완료 시 결과 화면 표시
-  if (isSubmitted && score !== null && totalQuestions !== null) {
-    return (
-      <ResultScreen
-        score={score}
-        totalQuestions={totalQuestions}
-        challengeTitle={challenge.title}
-      />
     );
   }
 

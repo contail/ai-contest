@@ -100,16 +100,16 @@ export default function ChallengeCard({ challenge, completed }: ChallengeCardPro
 
         {/* CTA 버튼 */}
         <div className="mt-auto pt-3">
-          <Link
-            href={`/challenge/${challenge.id}`}
-            className={`flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] border-2 py-3 text-sm font-semibold transition-all ${
-              isCompleted
-                ? "border-[var(--gray-200)] bg-[var(--gray-100)] text-[var(--gray-500)] cursor-default"
-                : "border-[var(--gray-200)] bg-white text-[var(--gray-700)] hover:border-[var(--brand)] hover:text-[var(--brand)]"
-            }`}
-          >
-            {isCompleted ? "챌린지 완료" : "챌린지 시작"}
-            {!isCompleted && (
+          {isCompleted ? (
+            <div className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] border-2 border-[var(--gray-200)] bg-[var(--gray-100)] py-3 text-sm font-semibold text-[var(--gray-500)]">
+              챌린지 완료
+            </div>
+          ) : (
+            <Link
+              href={`/challenge/${challenge.id}`}
+              className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] border-2 border-[var(--gray-200)] bg-white py-3 text-sm font-semibold text-[var(--gray-700)] transition-all hover:border-[var(--brand)] hover:text-[var(--brand)]"
+            >
+              챌린지 시작
               <svg
                 className="h-4 w-4 transition-transform group-hover:translate-x-1"
                 fill="none"
@@ -123,8 +123,8 @@ export default function ChallengeCard({ challenge, completed }: ChallengeCardPro
                   d="M13 7l5 5m0 0l-5 5m5-5H6"
                 />
               </svg>
-            )}
-          </Link>
+            </Link>
+          )}
         </div>
       </div>
     </article>
