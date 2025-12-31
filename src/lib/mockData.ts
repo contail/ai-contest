@@ -65,40 +65,37 @@ export const challenges: Challenge[] = [
       {
         id: "pfct-news-q1",
         order: 1,
-        type: "single",
-        prompt:
-          "URL slug에서 하이픈(-)으로 구분된 영단어 중, 가장 많이 등장하는 단어는?",
-        options: ["loan", "credit", "to", "peoplefund"],
+        type: "short",
+        prompt: "본문에 'AI'라는 키워드가 포함된 블로그는 몇 개인가요?",
         required: true,
       },
       {
         id: "pfct-news-q2",
         order: 2,
         type: "short",
-        prompt:
-          "본문에서 '연체율'이라는 단어가 가장 많이 등장하는 글의 slug는?",
+        prompt: "100개 블로그 본문에서 '금리'라는 단어가 총 몇 회 등장하나요?",
         required: true,
       },
       {
         id: "pfct-news-q3",
         order: 3,
         type: "short",
-        prompt: "본문에 '2024년'이라는 문구가 포함된 글은 총 몇 개인가요?",
+        prompt: "'투자'라는 단어가 가장 많이 등장하는 블로그의 slug는?",
         required: true,
       },
       {
         id: "pfct-news-q4",
         order: 4,
         type: "short",
-        prompt: "100개 블로그 중 본문 길이가 가장 짧은 글의 slug는?",
+        prompt:
+          "본문에 '담보'와 '아파트' 두 키워드가 모두 포함된 블로그는 몇 개인가요?",
         required: true,
       },
       {
         id: "pfct-news-q5",
         order: 5,
         type: "short",
-        prompt:
-          "100개 블로그 본문에서 '피플펀드'라는 단어가 총 몇 회 등장하나요?",
+        prompt: "'AI'라는 단어가 가장 많이 등장하는 블로그의 slug는?",
         required: true,
       },
     ],
