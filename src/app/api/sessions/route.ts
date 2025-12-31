@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabaseServer";
 
 type SessionPayload = {
   nickname?: string;
@@ -28,28 +28,42 @@ export async function POST(request: Request) {
     );
   }
 
-  const session = await prisma.submissionSession.upsert({
-    where: {
-      challengeId_nickname: {
-        challengeId: body.challengeId,
-        nickname: body.nickname,
-      },
-    },
-    update: {},
-    create: {
-      challengeId: body.challengeId,
-      nickname: body.nickname,
-    },
-  });
+  const { data: existingSession } = await supabase
+    .from("SubmissionSession")
+    .select("id,challengeId,nickname,status,createdAt,submittedAt")
+    .eq("challengeId", body.challengeId)
+    .eq("nickname", body.nickname)
+    .maybeSingle();
 
-  const answers = await prisma.answer.findMany({
-    where: { sessionId: session.id },
-    select: { questionId: true, payload: true },
-  });
+  const session =
+    existingSession ??
+    (
+      await supabase
+        .from("SubmissionSession")
+        .insert({
+          id: crypto.randomUUID(),
+          challengeId: body.challengeId,
+          nickname: body.nickname,
+        })
+        .select("id,challengeId,nickname,status,createdAt,submittedAt")
+        .single()
+    ).data;
+
+  if (!session) {
+    return NextResponse.json(
+      { message: "Failed to create session" },
+      { status: 500 }
+    );
+  }
+
+  const { data: answers } = await supabase
+    .from("Answer")
+    .select("questionId,payload")
+    .eq("sessionId", session.id);
 
   return NextResponse.json({
     session,
-    answers: answers.map((answer) => ({
+    answers: (answers ?? []).map((answer) => ({
       questionId: answer.questionId,
       payload: parsePayload(answer.payload),
     })),

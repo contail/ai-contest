@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabaseServer";
 
 type RouteParams = {
   params: { id: string };
@@ -21,21 +21,19 @@ export async function POST(request: Request, { params }: RouteParams) {
   const body = (await request.json()) as QuestionsPayload;
   const questions = body.questions ?? [];
 
-  await prisma.question.deleteMany({
-    where: { challengeId: params.id },
-  });
-
-  for (const question of questions) {
-    await prisma.question.create({
-      data: {
+  await supabase.from("Question").delete().eq("challengeId", params.id);
+  if (questions.length > 0) {
+    await supabase.from("Question").insert(
+      questions.map((question) => ({
+        id: crypto.randomUUID(),
         challengeId: params.id,
         order: question.order,
         type: question.type,
         prompt: question.prompt,
         options: question.options ? JSON.stringify(question.options) : null,
         required: question.required ?? false,
-      },
-    });
+      }))
+    );
   }
 
   return NextResponse.json({ count: questions.length });

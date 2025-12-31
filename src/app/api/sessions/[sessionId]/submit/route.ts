@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabaseServer";
 
 type RouteParams = {
   params: { sessionId: string };
 };
 
 export async function POST(_: Request, { params }: RouteParams) {
-  const session = await prisma.submissionSession.findUnique({
-    where: { id: params.sessionId },
-    select: { status: true },
-  });
+  const { data: session } = await supabase
+    .from("SubmissionSession")
+    .select("id,status")
+    .eq("id", params.sessionId)
+    .maybeSingle();
 
   if (!session) {
     return NextResponse.json({ message: "Session not found" }, { status: 404 });
@@ -22,13 +23,15 @@ export async function POST(_: Request, { params }: RouteParams) {
     );
   }
 
-  const updated = await prisma.submissionSession.update({
-    where: { id: params.sessionId },
-    data: {
+  const { data: updated } = await supabase
+    .from("SubmissionSession")
+    .update({
       status: "SUBMITTED",
-      submittedAt: new Date(),
-    },
-  });
+      submittedAt: new Date().toISOString(),
+    })
+    .eq("id", params.sessionId)
+    .select("id,challengeId,nickname,status,createdAt,submittedAt")
+    .single();
 
   return NextResponse.json({ session: updated });
 }

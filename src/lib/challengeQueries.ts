@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma";
 import { challenges } from "@/lib/mockData";
+import { supabase } from "@/lib/supabaseServer";
 
 export type ChallengeCardData = {
   id: string;
@@ -50,12 +50,20 @@ const parseOptions = (options: string | null) => {
 };
 
 export async function getChallenges(): Promise<ChallengeCardData[]> {
-  const challenges = await prisma.challenge.findMany({
-    where: { isPublished: true },
-    orderBy: { createdAt: "desc" },
-  });
+  const { data, error } = await supabase
+    .from("Challenge")
+    .select(
+      "id,title,subtitle,summary,tags,badge,heroCopy,description,cautionText,datasetLabel,datasetFileName,datasetDescription,datasetDownloadUrl,restrictDatasetUrl"
+    )
+    .eq("isPublished", true)
+    .order("createdAt", { ascending: false });
 
-  return challenges.map((challenge) => ({
+  if (error || !data) {
+    console.error("getChallenges failed", error);
+    return [];
+  }
+
+  return data.map((challenge) => ({
     id: challenge.id,
     title: challenge.title,
     subtitle: challenge.subtitle,
@@ -79,19 +87,26 @@ export async function getChallengeDetail(
   id: string
 ): Promise<ChallengeDetailData | null> {
   if (!id) return null;
-  const challenge = await prisma.challenge.findUnique({
-    where: { id },
-    include: {
-      questions: {
-        orderBy: { order: "asc" },
-      },
-      datasetUrls: {
-        select: { id: true },
-      },
-    },
-  });
+  const { data: challenge, error } = await supabase
+    .from("Challenge")
+    .select(
+      "id,title,subtitle,summary,tags,badge,heroCopy,description,cautionText,datasetLabel,datasetFileName,datasetDescription,datasetDownloadUrl,restrictDatasetUrl"
+    )
+    .eq("id", id)
+    .maybeSingle();
 
-  if (!challenge) return null;
+  if (error || !challenge) return null;
+
+  const { data: questions } = await supabase
+    .from("Question")
+    .select("id,order,type,prompt,options,required")
+    .eq("challengeId", id)
+    .order("order", { ascending: true });
+
+  const { data: datasetUrls } = await supabase
+    .from("DatasetUrl")
+    .select("id")
+    .eq("challengeId", id);
 
   return {
     id: challenge.id,
@@ -110,8 +125,8 @@ export async function getChallengeDetail(
     datasetDescription: challenge.datasetDescription,
     datasetDownloadUrl: challenge.datasetDownloadUrl,
     restrictDatasetUrl: challenge.restrictDatasetUrl,
-    datasetCount: challenge.datasetUrls.length,
-    questions: challenge.questions.map((question) => ({
+    datasetCount: datasetUrls?.length ?? 0,
+    questions: (questions ?? []).map((question) => ({
       id: question.id,
       order: question.order,
       type: question.type,

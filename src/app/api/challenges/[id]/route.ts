@@ -1,37 +1,36 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabaseServer";
 
 type RouteParams = {
   params: { id: string };
 };
 
 export async function GET(_: Request, { params }: RouteParams) {
-  const challenge = await prisma.challenge.findUnique({
-    where: { id: params.id },
-    include: {
-      questions: {
-        orderBy: { order: "asc" },
-        select: {
-          id: true,
-          order: true,
-          type: true,
-          prompt: true,
-          options: true,
-          required: true,
-        },
-      },
-      datasetUrls: {
-        select: { id: true },
-      },
-    },
-  });
+  const { data: challenge, error } = await supabase
+    .from("Challenge")
+    .select(
+      "id,title,subtitle,summary,tags,badge,heroCopy,description,cautionText,datasetLabel,datasetFileName,datasetDescription,datasetDownloadUrl,restrictDatasetUrl"
+    )
+    .eq("id", params.id)
+    .maybeSingle();
 
-  if (!challenge) {
+  if (error || !challenge) {
     return NextResponse.json({ message: "Not found" }, { status: 404 });
   }
 
-  const datasetCount = challenge.datasetUrls.length;
-  const questions = challenge.questions.map((question) => ({
+  const { data: questionsData } = await supabase
+    .from("Question")
+    .select("id,order,type,prompt,options,required")
+    .eq("challengeId", params.id)
+    .order("order", { ascending: true });
+
+  const { data: datasetUrls } = await supabase
+    .from("DatasetUrl")
+    .select("id")
+    .eq("challengeId", params.id);
+
+  const datasetCount = datasetUrls?.length ?? 0;
+  const questions = (questionsData ?? []).map((question) => ({
     ...question,
     options: question.options ? JSON.parse(question.options) : null,
   }));

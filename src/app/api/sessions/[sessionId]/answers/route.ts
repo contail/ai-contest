@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabaseServer";
 
 type AnswerPayload = {
   questionId: string;
@@ -39,10 +39,11 @@ const extractUrls = (payload: unknown) => {
 const isValidUrl = (value: string) => /^https?:\/\/\S+$/i.test(value.trim());
 
 export async function PUT(request: Request, { params }: RouteParams) {
-  const session = await prisma.submissionSession.findUnique({
-    where: { id: params.sessionId },
-    select: { status: true, challengeId: true },
-  });
+  const { data: session } = await supabase
+    .from("SubmissionSession")
+    .select("id,status,challengeId")
+    .eq("id", params.sessionId)
+    .maybeSingle();
 
   if (!session) {
     return NextResponse.json({ message: "Session not found" }, { status: 404 });
@@ -69,20 +70,21 @@ export async function PUT(request: Request, { params }: RouteParams) {
     );
   }
 
-  const challenge = await prisma.challenge.findUnique({
-    where: { id: session.challengeId },
-    select: { restrictDatasetUrl: true },
-  });
+  const { data: challenge } = await supabase
+    .from("Challenge")
+    .select("restrictDatasetUrl")
+    .eq("id", session.challengeId)
+    .maybeSingle();
 
   if (!challenge) {
     return NextResponse.json({ message: "Challenge not found" }, { status: 404 });
   }
 
   const questionIds = entries.map((entry) => entry.questionId);
-  const questions = await prisma.question.findMany({
-    where: { id: { in: questionIds } },
-    select: { id: true, type: true },
-  });
+  const { data: questions } = await supabase
+    .from("Question")
+    .select("id,type")
+    .in("id", questionIds);
 
   const questionTypeMap = new Map(
     questions.map((question) => [question.id, question.type])
@@ -107,14 +109,12 @@ export async function PUT(request: Request, { params }: RouteParams) {
     }
 
     if (submittedUrls.length > 0) {
-      const matched = await prisma.datasetUrl.findMany({
-        where: {
-          challengeId: session.challengeId,
-          url: { in: submittedUrls },
-        },
-        select: { url: true },
-      });
-      const allowed = new Set(matched.map((item) => item.url));
+      const { data: matched } = await supabase
+        .from("DatasetUrl")
+        .select("url")
+        .eq("challengeId", session.challengeId)
+        .in("url", submittedUrls);
+      const allowed = new Set((matched ?? []).map((item) => item.url));
       const notAllowed = submittedUrls.filter((url) => !allowed.has(url));
       if (notAllowed.length > 0) {
         return NextResponse.json(
@@ -125,25 +125,28 @@ export async function PUT(request: Request, { params }: RouteParams) {
     }
   }
 
-  await prisma.$transaction(
-    entries.map((entry) =>
-      prisma.answer.upsert({
-        where: {
-          sessionId_questionId: {
-            sessionId: params.sessionId,
-            questionId: entry.questionId,
-          },
-        },
-        update: {
-          payload: serializePayload(entry.payload),
-        },
-        create: {
+  await Promise.all(
+    entries.map(async (entry) => {
+      const payload = serializePayload(entry.payload);
+      const { data: updated } = await supabase
+        .from("Answer")
+        .update({
+          payload,
+          updatedAt: new Date().toISOString(),
+        })
+        .eq("sessionId", params.sessionId)
+        .eq("questionId", entry.questionId)
+        .select("id");
+
+      if (!updated || updated.length === 0) {
+        await supabase.from("Answer").insert({
+          id: crypto.randomUUID(),
           sessionId: params.sessionId,
           questionId: entry.questionId,
-          payload: serializePayload(entry.payload),
-        },
-      })
-    )
+          payload,
+        });
+      }
+    })
   );
 
   return NextResponse.json({ status: "saved" });

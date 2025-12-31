@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/prisma";
 import { challenges } from "@/lib/mockData";
 import { pfctBlogUrls } from "@/lib/pfctBlogUrls";
+import { supabase } from "@/lib/supabaseServer";
 
 type RouteContext = {
   params: Promise<{
@@ -27,18 +27,20 @@ export async function GET(_request: Request, context: RouteContext) {
     return new Response("Missing challenge id.", { status: 400 });
   }
 
-  const challenge = await prisma.challenge.findUnique({
-    where: { id },
-    include: {
-      datasetUrls: {
-        select: { url: true },
-        orderBy: { createdAt: "asc" },
-      },
-    },
-  });
+  const { data: challenge } = await supabase
+    .from("Challenge")
+    .select("datasetFileName")
+    .eq("id", id)
+    .maybeSingle();
 
-  if (challenge && challenge.datasetUrls.length > 0) {
-    const urls = challenge.datasetUrls.map((item) => item.url);
+  const { data: datasetUrls } = await supabase
+    .from("DatasetUrl")
+    .select("url")
+    .eq("challengeId", id)
+    .order("createdAt", { ascending: true });
+
+  if (challenge && datasetUrls && datasetUrls.length > 0) {
+    const urls = datasetUrls.map((item) => item.url);
     return buildDownloadResponse(challenge.datasetFileName, urls);
   }
 

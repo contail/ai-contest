@@ -1,6 +1,6 @@
 import Header from "@/components/site/Header";
 import { getAnswerKeyByChallengeId } from "@/lib/mockData";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabaseServer";
 
 const parseAnswerPayload = (payload: string): string | string[] => {
   const trimmed = payload.trim();
@@ -40,15 +40,43 @@ const isEqualAnswer = (
 };
 
 export default async function ResultsPage() {
-  const sessions = await prisma.submissionSession.findMany({
-    include: {
-      challenge: true,
-      answers: true,
-    },
-    orderBy: { createdAt: "desc" },
+  const { data: sessions } = await supabase
+    .from("SubmissionSession")
+    .select("id,challengeId,nickname,status,createdAt,submittedAt")
+    .order("createdAt", { ascending: false });
+
+  const sessionList = sessions ?? [];
+  const challengeIds = Array.from(
+    new Set(sessionList.map((session) => session.challengeId))
+  );
+  const sessionIds = sessionList.map((session) => session.id);
+
+  const { data: challenges } = challengeIds.length
+    ? await supabase
+        .from("Challenge")
+        .select("id,title")
+        .in("id", challengeIds)
+    : { data: [] };
+
+  const { data: answers } = sessionIds.length
+    ? await supabase
+        .from("Answer")
+        .select("sessionId,questionId,payload")
+        .in("sessionId", sessionIds)
+    : { data: [] };
+
+  const challengeMap = new Map(
+    (challenges ?? []).map((challenge) => [challenge.id, challenge])
+  );
+  const answersBySession = new Map<string, typeof answers>();
+  (answers ?? []).forEach((answer) => {
+    if (!answersBySession.has(answer.sessionId)) {
+      answersBySession.set(answer.sessionId, []);
+    }
+    answersBySession.get(answer.sessionId)?.push(answer);
   });
 
-  const grouped = sessions.reduce<Record<string, typeof sessions>>(
+  const grouped = sessionList.reduce<Record<string, typeof sessionList>>(
     (acc, session) => {
       const key = session.challengeId;
       if (!acc[key]) acc[key] = [];
@@ -74,7 +102,7 @@ export default async function ResultsPage() {
           </p>
         </section>
 
-        {sessions.length === 0 ? (
+        {sessionList.length === 0 ? (
           <section className="border border-black/5 bg-[var(--card)] px-6 py-8 text-sm text-slate-600 shadow-sm">
             아직 생성된 응시 세션이 없습니다.
           </section>
@@ -87,7 +115,8 @@ export default async function ResultsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
-                    {items[0]?.challenge.title ?? "콘테스트"}
+                    {challengeMap.get(items[0]?.challengeId)?.title ??
+                      "콘테스트"}
                   </p>
                   <p className="mt-1 text-sm text-slate-600">
                     총 {items.length}건
@@ -100,7 +129,7 @@ export default async function ResultsPage() {
                     session.challengeId
                   );
                   const answerMap = new Map(
-                    session.answers.map((answer) => [
+                    (answersBySession.get(session.id) ?? []).map((answer) => [
                       answer.questionId,
                       parseAnswerPayload(answer.payload),
                     ])
@@ -143,7 +172,7 @@ export default async function ResultsPage() {
                           </span>
                         )}
                         <span className="text-slate-500">
-                          응답 {session.answers.length}개
+                          응답 {answersBySession.get(session.id)?.length ?? 0}개
                         </span>
                       </div>
                     </div>

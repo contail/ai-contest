@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabaseServer";
 
 type RouteParams = {
   params: { id: string };
@@ -12,12 +12,14 @@ type SettingsPayload = {
 export async function POST(request: Request, { params }: RouteParams) {
   const body = (await request.json()) as SettingsPayload;
 
-  const challenge = await prisma.challenge.update({
-    where: { id: params.id },
-    data: {
+  const { data: challenge } = await supabase
+    .from("Challenge")
+    .update({
       restrictDatasetUrl: body.restrictDatasetUrl ?? false,
-    },
-  });
+    })
+    .eq("id", params.id)
+    .select("*")
+    .single();
 
   return NextResponse.json({ challenge });
 }

@@ -1,54 +1,31 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabaseServer";
 
 export async function GET() {
-  const published = await prisma.challenge.findMany({
-    where: { isPublished: true },
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      title: true,
-      subtitle: true,
-      summary: true,
-      tags: true,
-      badge: true,
-      heroCopy: true,
-      description: true,
-      cautionText: true,
-      datasetLabel: true,
-      datasetFileName: true,
-      datasetDescription: true,
-      datasetDownloadUrl: true,
-      restrictDatasetUrl: true,
-      isPublished: true,
-      createdAt: true,
-    },
-  });
+  const selectFields =
+    "id,title,subtitle,summary,tags,badge,heroCopy,description,cautionText,datasetLabel,datasetFileName,datasetDescription,datasetDownloadUrl,restrictDatasetUrl,isPublished,createdAt";
 
-  const challenges =
-    published.length > 0
-      ? published
-      : await prisma.challenge.findMany({
-          orderBy: { createdAt: "desc" },
-          select: {
-          id: true,
-          title: true,
-          subtitle: true,
-          summary: true,
-          tags: true,
-          badge: true,
-          heroCopy: true,
-          description: true,
-          cautionText: true,
-          datasetLabel: true,
-          datasetFileName: true,
-          datasetDescription: true,
-          datasetDownloadUrl: true,
-          restrictDatasetUrl: true,
-          isPublished: true,
-          createdAt: true,
-        },
-      });
+  const { data: published, error: publishedError } = await supabase
+    .from("Challenge")
+    .select(selectFields)
+    .eq("isPublished", true)
+    .order("createdAt", { ascending: false });
+
+  if (publishedError) {
+    return NextResponse.json(
+      { message: "Failed to load challenges." },
+      { status: 500 }
+    );
+  }
+
+  const challenges = published && published.length > 0
+    ? published
+    : (
+        await supabase
+          .from("Challenge")
+          .select(selectFields)
+          .order("createdAt", { ascending: false })
+      ).data ?? [];
 
   const payload = challenges.map((challenge) => ({
     ...challenge,

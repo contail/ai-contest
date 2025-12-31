@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabaseServer";
 
 type RouteParams = {
   params: { id: string };
@@ -26,28 +26,27 @@ export async function POST(request: Request, { params }: RouteParams) {
   const body = (await request.json()) as DatasetPayload;
   const urls = sanitizeUrls(body.urls);
 
-  const challenge = await prisma.challenge.update({
-    where: { id: params.id },
-    data: {
+  const { data: challenge } = await supabase
+    .from("Challenge")
+    .update({
       datasetLabel: body.datasetLabel,
       datasetFileName: body.datasetFileName,
       datasetDescription: body.datasetDescription,
       datasetDownloadUrl: body.datasetDownloadUrl ?? null,
-    },
-  });
+    })
+    .eq("id", params.id)
+    .select("*")
+    .single();
 
   if (urls.length > 0) {
-    await prisma.datasetUrl.deleteMany({
-      where: { challengeId: params.id },
-    });
-    for (const url of urls) {
-      await prisma.datasetUrl.create({
-        data: {
-          challengeId: params.id,
-          url,
-        },
-      });
-    }
+    await supabase.from("DatasetUrl").delete().eq("challengeId", params.id);
+    await supabase.from("DatasetUrl").insert(
+      urls.map((url) => ({
+        id: crypto.randomUUID(),
+        challengeId: params.id,
+        url,
+      }))
+    );
   }
 
   return NextResponse.json({ challenge, datasetCount: urls.length });
