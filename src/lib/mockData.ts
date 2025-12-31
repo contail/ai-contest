@@ -63,53 +63,44 @@ export const challenges: Challenge[] = [
     answerKey: buildPfctBlogAnswerKey(),
     questions: [
       {
-        id: "q1",
+        id: "pfct-news-q1",
         order: 1,
         type: "single",
-        prompt: "“띵동! 매주 수요일에 찾아오는 행복, 해피아워로”에 해당하는 URL은 무엇인가요?",
-        options: [
-          "https://blog.pfct.co.kr/happyhour",
-          "https://blog.pfct.co.kr/good-time-with-good-people-1",
-          "https://blog.pfct.co.kr/2024-year-end-party",
-          "https://blog.pfct.co.kr/flexing-year-end",
-        ],
+        prompt:
+          "URL slug에서 하이픈(-)으로 구분된 영단어 중, 가장 많이 등장하는 단어는?",
+        options: ["loan", "credit", "to", "peoplefund"],
         required: true,
       },
       {
-        id: "q2",
+        id: "pfct-news-q2",
         order: 2,
         type: "short",
         prompt:
-          "전체 URL 문자열에서 “예약투자”는 몇 회 등장하나요? (없으면 0 입력)",
+          "100개 블로그 본문에서 '피플펀드'라는 단어가 총 몇 회 등장하나요? (숫자만 입력, 크롤링 필요)",
         required: true,
       },
       {
-        id: "q3",
+        id: "pfct-news-q3",
         order: 3,
-        type: "single",
-        prompt: "전체 URL 문자열에서 “대출”은 몇 회 등장하나요?",
-        options: [
-          "2회",
-          "3회",
-          "4회",
-          "5회",
-        ],
+        type: "short",
+        prompt:
+          "100개 블로그 중 본문에 '머신러닝' 또는 '딥러닝'이 언급된 글은 몇 개인가요? (숫자만 입력, 크롤링 필요)",
         required: true,
       },
       {
-        id: "q4",
+        id: "pfct-news-q4",
         order: 4,
         type: "short",
         prompt:
-          "하이픈('-')이 4개 이상 포함된 URL은 몇 개인가요? (숫자만 입력)",
+          "100개 블로그 중 본문 길이가 1000자 미만인 글은 몇 개인가요? (숫자만 입력, 크롤링 필요)",
         required: true,
       },
       {
-        id: "q5",
+        id: "pfct-news-q5",
         order: 5,
         type: "short",
         prompt:
-          "도메인을 제외한 slug 기준, 가장 긴 slug의 길이는 몇 자인가요? (숫자만 입력)",
+          "100개 블로그 중 본문에 '2024년'이라는 문구가 포함된 글은 몇 개인가요? (숫자만 입력, 크롤링 필요)",
         required: true,
       },
     ],
