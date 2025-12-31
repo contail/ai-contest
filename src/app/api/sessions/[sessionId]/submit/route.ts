@@ -10,7 +10,7 @@ export async function POST(_: Request, context: RouteContext) {
 
   const { data: session } = await supabase
     .from("submission_sessions")
-    .select("id,status")
+    .select("id,status,challenge_id")
     .eq("id", sessionId)
     .maybeSingle();
 
@@ -25,14 +25,48 @@ export async function POST(_: Request, context: RouteContext) {
     );
   }
 
+  // 채점: 사용자 답변 가져오기
+  const { data: userAnswers } = await supabase
+    .from("answers")
+    .select("question_id,payload")
+    .eq("session_id", sessionId);
+
+  // 정답 키 가져오기
+  const { data: answerKeys } = await supabase
+    .from("answer_keys")
+    .select("question_id,answer");
+
+  // 해당 챌린지의 질문 수 가져오기
+  const { data: questions } = await supabase
+    .from("questions")
+    .select("id")
+    .eq("challenge_id", session.challenge_id);
+
+  const totalQuestions = questions?.length || 0;
+
+  // 점수 계산
+  let correctCount = 0;
+  const answerKeyMap = new Map(
+    (answerKeys || []).map((ak) => [ak.question_id, ak.answer])
+  );
+
+  (userAnswers || []).forEach((ua) => {
+    const expected = answerKeyMap.get(ua.question_id);
+    if (expected && ua.payload?.toString().trim() === expected.trim()) {
+      correctCount++;
+    }
+  });
+
   const { data: updated } = await supabase
     .from("submission_sessions")
     .update({
       status: "SUBMITTED",
       submitted_at: new Date().toISOString(),
+      score: correctCount,
+      total_questions: totalQuestions,
     })
     .eq("id", sessionId)
-    .select("id,challenge_id,nickname,status,created_at,submitted_at")
+    .select("id,challenge_id,nickname,status,created_at,submitted_at,score,total_questions")
     .single();
 
   return NextResponse.json({
@@ -43,6 +77,8 @@ export async function POST(_: Request, context: RouteContext) {
       status: updated.status,
       createdAt: updated.created_at,
       submittedAt: updated.submitted_at,
+      score: updated.score,
+      totalQuestions: updated.total_questions,
     } : null,
   });
 }

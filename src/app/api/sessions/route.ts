@@ -31,7 +31,7 @@ export async function POST(request: Request) {
 
   const { data: existingSession } = await supabase
     .from("submission_sessions")
-    .select("id,challenge_id,user_id,nickname,status,created_at,submitted_at")
+    .select("id,challenge_id,user_id,nickname,status,created_at,submitted_at,score,total_questions")
     .eq("challenge_id", body.challengeId)
     .eq("nickname", body.nickname)
     .maybeSingle();
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
         user_id: body.userId ?? null,
         nickname: body.nickname,
       })
-      .select("id,challenge_id,user_id,nickname,status,created_at,submitted_at")
+      .select("id,challenge_id,user_id,nickname,status,created_at,submitted_at,score,total_questions")
       .single();
     session = newSession;
   } else if (existingSession && body.userId && !existingSession.user_id) {
@@ -78,6 +78,8 @@ export async function POST(request: Request) {
       status: session.status,
       createdAt: session.created_at,
       submittedAt: session.submitted_at,
+      score: session.score,
+      total_questions: session.total_questions,
     },
     answers: (answers ?? []).map((answer) => ({
       questionId: answer.question_id,
