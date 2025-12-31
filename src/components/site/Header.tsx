@@ -19,7 +19,7 @@ export default function Header() {
   );
 
   return (
-    <header className="w-full border-b border-black/5 bg-white/90 backdrop-blur">
+    <header className="relative z-[9999] w-full border-b border-black/5 bg-white/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <Link
           href="/"
