@@ -153,7 +153,7 @@ export async function getChallengeDetailOrMock(
     datasetLabel: mock.datasetLabel,
     datasetFileName: mock.datasetFileName,
     datasetDescription: mock.datasetDescription,
-    datasetDownloadUrl: null,
+    datasetDownloadUrl: mock.datasetDownloadUrl ?? null,
     restrictDatasetUrl: false,
     datasetCount: mock.id === "pfct-news" ? 100 : 0,
     questions: mock.questions.map((question) => ({

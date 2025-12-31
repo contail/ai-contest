@@ -20,6 +20,7 @@ async function main() {
         datasetLabel: challenge.datasetLabel,
         datasetFileName: challenge.datasetFileName,
         datasetDescription: challenge.datasetDescription,
+        datasetDownloadUrl: challenge.datasetDownloadUrl ?? null,
         restrictDatasetUrl: false,
         isPublished: true,
       },
@@ -36,6 +37,7 @@ async function main() {
         datasetLabel: challenge.datasetLabel,
         datasetFileName: challenge.datasetFileName,
         datasetDescription: challenge.datasetDescription,
+        datasetDownloadUrl: challenge.datasetDownloadUrl ?? null,
         restrictDatasetUrl: false,
         isPublished: true,
       },
@@ -66,10 +68,12 @@ async function main() {
             challengeId: createdChallenge.id,
             url,
           }))
-        : Array.from({ length: 5 }, (_, index) => ({
-            challengeId: createdChallenge.id,
-            url: `https://example.com/articles/${challenge.id}/${index + 1}`,
-          }));
+        : challenge.id === "pfct-ocr"
+          ? []
+          : Array.from({ length: 5 }, (_, index) => ({
+              challengeId: createdChallenge.id,
+              url: `https://example.com/articles/${challenge.id}/${index + 1}`,
+            }));
 
     await prisma.datasetUrl.deleteMany({
       where: { challengeId: createdChallenge.id },
