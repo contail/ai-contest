@@ -80,7 +80,8 @@ export const challenges: Challenge[] = [
         id: "pfct-news-q3",
         order: 3,
         type: "short",
-        prompt: "'투자'라는 단어가 가장 많이 등장하는 블로그의 slug는?",
+        prompt:
+          "'투자'라는 단어가 가장 많이 등장하는 블로그의 slug는? (slug: URL에서 도메인을 제외한 경로)",
         required: true,
       },
       {
@@ -95,7 +96,8 @@ export const challenges: Challenge[] = [
         id: "pfct-news-q5",
         order: 5,
         type: "short",
-        prompt: "'AI'라는 단어가 가장 많이 등장하는 블로그의 slug는?",
+        prompt:
+          "'AI'라는 단어가 가장 많이 등장하는 블로그의 slug는? (slug: URL에서 도메인을 제외한 경로, 예: blog.pfct.co.kr/hello → hello)",
         required: true,
       },
     ],
