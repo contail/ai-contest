@@ -35,18 +35,14 @@ export default function ChallengeCard({ challenge, completed }: ChallengeCardPro
           </span>
         </div>
 
-        {/* 우상단 배지 */}
-        <div className="absolute right-3 top-3">
-          {isCompleted ? (
+        {/* 우상단 배지 - 완료 시만 표시 */}
+        {isCompleted && (
+          <div className="absolute right-3 top-3">
             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--lime-500)] text-[10px] font-bold text-[var(--gray-900)]">
               ✓
             </span>
-          ) : challenge.badge ? (
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--red-700)] text-[10px] font-bold text-white">
-              {challenge.badge}
-            </span>
-          ) : null}
-        </div>
+          </div>
+        )}
 
         {/* 중앙 - 완료 시 트로피와 점수, 미완료 시 아이콘 */}
         <div className="absolute inset-0 flex items-center justify-center">
@@ -84,47 +80,34 @@ export default function ChallengeCard({ challenge, completed }: ChallengeCardPro
 
       {/* 카드 하단 - 콘텐츠 영역 */}
       <div className="flex flex-1 flex-col gap-3 p-5">
-        <h3 className="text-lg font-bold text-[var(--gray-900)] group-hover:text-[var(--brand-strong)] transition-colors">
-          {challenge.title}
-        </h3>
-
-        {/* 태그 */}
+        {/* 태그를 제목 위로 이동 */}
         <div className="flex flex-wrap gap-1.5">
           {challenge.tags.slice(0, 3).map((tag) => (
             <span
               key={tag}
-              className="rounded-full border border-[var(--border)] bg-[var(--gray-50)] px-2.5 py-0.5 text-[11px] font-medium text-[var(--gray-500)]"
+              className="text-[11px] font-medium text-[var(--gray-400)]"
             >
-              {tag}
+              #{tag}
             </span>
           ))}
         </div>
 
-        {/* CTA 버튼 */}
+        <h3 className="text-lg font-bold text-[var(--gray-900)] group-hover:text-[var(--brand-strong)] transition-colors">
+          {challenge.title}
+        </h3>
+
+        {/* CTA 버튼 - 워딩 변경 */}
         <div className="mt-auto pt-3">
           {isCompleted ? (
             <div className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] border-2 border-[var(--gray-200)] bg-[var(--gray-100)] py-3 text-sm font-semibold text-[var(--gray-500)]">
-              챌린지 완료
+              응시 완료
             </div>
           ) : (
             <Link
               href={`/challenge/${challenge.id}`}
               className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] border-2 border-[var(--gray-200)] bg-white py-3 text-sm font-semibold text-[var(--gray-700)] transition-all hover:border-[var(--brand)] hover:text-[var(--brand)]"
             >
-              챌린지 시작
-              <svg
-                className="h-4 w-4 transition-transform group-hover:translate-x-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M13 7l5 5m0 0l-5 5m5-5H6"
-                />
-              </svg>
+              응시하기
             </Link>
           )}
         </div>
