@@ -1,8 +1,40 @@
 import Header from "@/components/site/Header";
 import { AdminGuard } from "@/components/auth/AdminGuard";
-import { getAnswerKeyByChallengeId } from "@/lib/mockData";
 import { supabase } from "@/lib/supabaseServer";
 import SessionResetButton from "@/components/admin/SessionResetButton";
+
+async function getAnswerKeysByChallengeIds(
+  challengeIds: string[]
+): Promise<Map<string, Record<string, string>>> {
+  if (challengeIds.length === 0) return new Map();
+
+  const { data: questions } = await supabase
+    .from("questions")
+    .select("id, challenge_id")
+    .in("challenge_id", challengeIds);
+
+  if (!questions?.length) return new Map();
+
+  const questionIds = questions.map((q) => q.id);
+  const { data: answerKeys } = await supabase
+    .from("answer_keys")
+    .select("question_id, answer")
+    .in("question_id", questionIds);
+
+  const result = new Map<string, Record<string, string>>();
+  challengeIds.forEach((id) => result.set(id, {}));
+
+  questions.forEach((q) => {
+    const answer = answerKeys?.find((a) => a.question_id === q.id);
+    if (answer) {
+      const existing = result.get(q.challenge_id) ?? {};
+      existing[q.id] = answer.answer;
+      result.set(q.challenge_id, existing);
+    }
+  });
+
+  return result;
+}
 
 const parseAnswerPayload = (payload: string): string | string[] => {
   const trimmed = payload.trim();
@@ -102,6 +134,8 @@ async function ResultsContent() {
     {}
   );
 
+  const answerKeysMap = await getAnswerKeysByChallengeIds(challengeIds);
+
   return (
     <>
       <section className="border border-black/5 bg-[var(--card)] px-6 py-5 shadow-sm">
@@ -139,9 +173,7 @@ async function ResultsContent() {
             </div>
             <div className="mt-4 divide-y divide-slate-200">
               {items.map((session) => {
-                const answerKey = getAnswerKeyByChallengeId(
-                  session.challengeId
-                );
+                const answerKey = answerKeysMap.get(session.challengeId);
                 const answerMap = new Map(
                   (answersBySession.get(session.id) ?? []).map((answer) => [
                     answer.questionId,

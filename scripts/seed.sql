@@ -8,6 +8,7 @@ BEGIN;
 -- Clear existing data
 DELETE FROM answers;
 DELETE FROM submission_sessions;
+DELETE FROM answer_keys;
 DELETE FROM dataset_urls;
 DELETE FROM questions;
 DELETE FROM challenges;
@@ -182,6 +183,24 @@ INSERT INTO dataset_urls (id, challenge_id, url) VALUES
   ('pfct-news-url-098', 'pfct-news', 'https://blog.pfct.co.kr/iflr-asia-pacific-awards-2020'),
   ('pfct-news-url-099', 'pfct-news', 'https://blog.pfct.co.kr/impact-of-credit-score'),
   ('pfct-news-url-100', 'pfct-news', 'https://blog.pfct.co.kr/importance-of-partner-bank');
+
+-- =============================================================================
+-- Answer Keys
+-- =============================================================================
+
+INSERT INTO answer_keys (question_id, answer) VALUES
+  -- PFCT Blog 정답
+  ('pfct-news-q1', '37'),
+  ('pfct-news-q2', '384'),
+  ('pfct-news-q3', '채권-투자의-매력'),
+  ('pfct-news-q4', '11'),
+  ('pfct-news-q5', 'ai-lab'),
+  -- 배차 챌린지 정답
+  ('pfct-ocr-q1', '4건'),
+  ('pfct-ocr-q2', '정스피드 > 김철수 > 이영희 > 박민수 > 최신속'),
+  ('pfct-ocr-q3', '서초구'),
+  ('pfct-ocr-q4', '라이더의 최대 적재 용량 초과'),
+  ('pfct-ocr-q5', '정스피드 > 김철수 > 최신속 > 이영희 = 박민수');
 
 COMMIT;
 
