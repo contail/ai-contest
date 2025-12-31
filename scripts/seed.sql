@@ -71,98 +71,98 @@ VALUES
 -- Questions
 -- =============================================================================
 
--- pfct-news questions (크롤링 기반 문제)
-INSERT INTO questions (id, challenge_id, "order", type, prompt, options, required) VALUES
+-- pfct-news questions (크롤링 기반 문제, 총 100점)
+INSERT INTO questions (id, challenge_id, "order", type, prompt, options, required, points) VALUES
   ('pfct-news-q1', 'pfct-news', 1, 'SHORT',
    '본문에 ''AI''라는 키워드가 포함된 블로그는 몇 개인가요?',
-   NULL, true),
+   NULL, true, 10),
   ('pfct-news-q2', 'pfct-news', 2, 'SHORT',
    '100개 블로그 본문에서 ''금리''라는 단어가 총 몇 회 등장하나요?',
-   NULL, true),
+   NULL, true, 20),
   ('pfct-news-q3', 'pfct-news', 3, 'SHORT',
    '''투자''라는 단어가 가장 많이 등장하는 블로그의 slug는? (slug: URL에서 도메인을 제외한 경로)',
-   NULL, true),
+   NULL, true, 20),
   ('pfct-news-q4', 'pfct-news', 4, 'SHORT',
    '본문에 ''담보''와 ''아파트'' 두 키워드가 모두 포함된 블로그는 몇 개인가요?',
-   NULL, true),
+   NULL, true, 20),
   ('pfct-news-q5', 'pfct-news', 5, 'SHORT',
    '''AI''라는 단어가 가장 많이 등장하는 블로그의 slug는? (slug: URL에서 도메인을 제외한 경로, 예: blog.pfct.co.kr/hello → hello)',
-   NULL, true);
+   NULL, true, 30);
 
--- pfct-ocr questions
-INSERT INTO questions (id, challenge_id, "order", type, prompt, options, required) VALUES
+-- pfct-ocr questions (총 90점)
+INSERT INTO questions (id, challenge_id, "order", type, prompt, options, required, points) VALUES
   ('pfct-ocr-q1', 'pfct-ocr', 1, 'single',
    'dispatch_log.csv 데이터 중, 선호 지역 가중치 적용으로 인해 실제 거리상 더 가까운 라이더가 있었음에도 배차권을 얻은 ''역전 배차'' 건수는 몇 건인가요?',
-   '["2건","3건","4건","5건"]', true),
+   '["2건","3건","4건","5건"]', true, 10),
   ('pfct-ocr-q2', 'pfct-ocr', 2, 'single',
    '배차에 성공한 라이더들의 평균 실제 이동 거리(raw_distance)를 긴 순서에서 짧은 순서로 정렬한 것을 고르세요.',
    '["정스피드 > 박민수 > 이영희 > 김철수 > 최신속","정스피드 > 김철수 > 이영희 > 박민수 > 최신속","최신속 > 박민수 > 이영희 > 김철수 > 정스피드","이영희 > 정스피드 > 김철수 > 박민수 > 최신속"]',
-   true),
+   true, 15),
   ('pfct-ocr-q3', 'pfct-ocr', 3, 'single',
    '배차 완료 데이터에서, 선호 지역 라이더가 배정된 비율이 100%인 지역 중 배정 건수가 가장 많은 지역은?',
-   '["강남구","서초구","역삼동","송파구"]', true),
+   '["강남구","서초구","역삼동","송파구"]', true, 15),
   ('pfct-ocr-q4', 'pfct-ocr', 4, 'single',
    'pending_orders.csv 기준, 배차 실패 원인 중 가장 많이 발생한 사유는 무엇인가요?',
    '["배달 가능 반경(10km) 초과","라이더의 최대 적재 용량 초과","가용 라이더의 업무 부하(2건) 초과","주문 지역 선호 라이더 부재"]',
-   true),
+   true, 10),
   ('pfct-ocr-q5', 'pfct-ocr', 5, 'single',
    '모든 배차 완료 후, 남은 적재 용량이 큰 순서대로 라이더를 정렬한 결과는 무엇인가요?',
    '["정스피드 > 김철수 > 최신속 > 이영희 = 박민수","정스피드 > 이영희 > 박민수 > 김철수 > 최신속","김철수 > 정스피드 > 최신속 > 이영희 = 박민수","최신속 > 이영희 > 박민수 > 정스피드 > 김철수"]',
-   true);
+   true, 40);
 
--- drone-multimodal questions
-INSERT INTO questions (id, challenge_id, "order", type, prompt, options, required) VALUES
+-- drone-multimodal questions (총 100점)
+INSERT INTO questions (id, challenge_id, "order", type, prompt, options, required, points) VALUES
   ('drone-q1', 'drone-multimodal', 1, 'SINGLE',
    '14:22:05 주택가 골목 비행 중 발생한 EMERGENCY_STOP 이벤트입니다. event_001_sensor.json과 event_001_vision.png를 대조하여 AI의 판단 근거를 분석하세요.',
    '["과잉 반응: 장애물이 작아 회피 가능했음","적절한 판단: 생명체 식별 및 안전거리 미확보로 정지함","센서 오류: 이미지와 라이다 거리값 불일치","판단 불가: 조도 부족으로 식별 불가"]',
-   true),
+   true, 30),
   ('drone-q2', 'drone-multimodal', 2, 'SINGLE',
    '목적지 상공(Target_Zone_7B)에 도착했으나 착륙하지 않고 회항했습니다. event_002_sensor.json과 event_002_vision.png를 분석하여 AI가 착륙을 포기한 기술적 원인은 무엇입니까?',
    '["GPS 신호 미약으로 위치 특정 실패","고도 센서 오작동 (지상으로 오인)","표면 스캔 결과 불안정(UNSTABLE) - 장애물 감지","배터리 잔량 부족 (Critical Low)"]',
-   true),
+   true, 30),
   ('drone-q3', 'drone-multimodal', 3, 'SINGLE',
    '맑은 날씨(Clear)임에도 VISUAL_ERROR 경고가 발생했습니다. event_003_sensor.json과 event_003_vision.png를 분석하여 엔지니어로서 가장 먼저 수행해야 할 조치는 무엇입니까?',
    '["기상청 API 서버 점검 요청","즉시 복귀 명령 (시각 센서 신뢰도 저하)","강제 착륙 시도 (현 위치)","API 데이터 신뢰 후 계속 비행"]',
-   true);
+   true, 40);
 
--- voyager-signal questions (외계 신호 해독)
-INSERT INTO questions (id, challenge_id, "order", type, prompt, options, required) VALUES
+-- voyager-signal questions (외계 신호 해독, 총 100점)
+INSERT INTO questions (id, challenge_id, "order", type, prompt, options, required, points) VALUES
   ('voyager-q1', 'voyager-signal', 1, 'SHORT',
    '제공된 규칙에 따라 신호에서 노이즈를 제거했을 때, 전체 신호 대비 노이즈의 비율은 얼마인가요? (소수점 둘째 자리까지, 예: 12.34)',
-   NULL, true),
+   NULL, true, 30),
   ('voyager-q2', 'voyager-signal', 2, 'SHORT',
    '해독된 메시지에서 "HELLO_EARTH"라는 문자열이 총 몇 번 등장하나요?',
-   NULL, true),
+   NULL, true, 30),
   ('voyager-q3', 'voyager-signal', 3, 'SINGLE',
    '해독된 메시지에 포함된 좌표 정보(X, Y, Z)를 고르세요.',
    '["X:127 Y:891 Z:2049","X:256 Y:512 Z:1024","X:100 Y:200 Z:300","X:891 Y:127 Z:2049"]',
-   true);
+   true, 40);
 
--- ott-analysis questions (OTT 콘텐츠 분석)
-INSERT INTO questions (id, challenge_id, "order", type, prompt, options, required) VALUES
+-- ott-analysis questions (OTT 콘텐츠 분석, 총 100점)
+INSERT INTO questions (id, challenge_id, "order", type, prompt, options, required, points) VALUES
   ('ott-q1', 'ott-analysis', 1, 'SINGLE',
    '지난 1년간 공개된 콘텐츠 중 평균 시청 시간이 가장 긴 장르 TOP 3를 순서대로 나열한 것을 고르세요.',
    '["SF > 스릴러 > 액션","드라마 > 로맨스 > 코미디","액션 > SF > 스릴러","스릴러 > 액션 > SF"]',
-   true),
+   true, 30),
   ('ott-q2', 'ott-analysis', 2, 'SHORT',
    '가장 많은 콘텐츠를 시청한 상위 1% VIP 유저들이 공통적으로 가장 많이 시청한 배우는 누구인가요? (예: 배우A)',
-   NULL, true),
+   NULL, true, 30),
   ('ott-q3', 'ott-analysis', 3, 'SHORT',
    'SF 장르 콘텐츠의 평균 시청 시간은 몇 분인가요? (소수점 첫째 자리까지, 예: 94.7)',
-   NULL, true);
+   NULL, true, 40);
 
--- warehouse-robot questions (물류 로봇 최적화)
-INSERT INTO questions (id, challenge_id, "order", type, prompt, options, required) VALUES
+-- warehouse-robot questions (물류 로봇 최적화, 총 100점)
+INSERT INTO questions (id, challenge_id, "order", type, prompt, options, required, points) VALUES
   ('warehouse-q1', 'warehouse-robot', 1, 'SHORT',
    '로봇 R01이 (1,1) 위치에서 주문 ORD003의 픽업 위치 (6,6)까지 이동할 때 맨해튼 거리는 얼마인가요?',
-   NULL, true),
+   NULL, true, 30),
   ('warehouse-q2', 'warehouse-robot', 2, 'SINGLE',
    '현재 대기 중인 주문들을 가용 로봇들에게 할당할 때, 전체 로봇의 예상 총 이동 거리가 가장 짧아지는 최적 할당의 총 거리는?',
    '["10","12","14","16"]',
-   true),
+   true, 30),
   ('warehouse-q3', 'warehouse-robot', 3, 'SHORT',
    '시뮬레이션 결과, 모든 로봇이 작업을 수행할 때 가장 많이 통과하여 혼잡도가 높을 것으로 예상되는 좌표는? (예: 4,4)',
-   NULL, true);
+   NULL, true, 40);
 
 -- =============================================================================
 -- Dataset URLs (pfct-news)

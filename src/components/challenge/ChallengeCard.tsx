@@ -60,12 +60,10 @@ export default function ChallengeCard({ challenge, completed }: ChallengeCardPro
                 <path d="M5 3h14c.55 0 1 .45 1 1v2c0 2.21-1.79 4-4 4h-.37c-.67 1.65-2.13 2.87-3.88 3.24V16H14c1.1 0 2 .9 2 2v2H8v-2c0-1.1.9-2 2-2h2.25v-2.76C10.54 12.87 9.08 11.65 8.41 10H8c-2.21 0-4-1.79-4-4V4c0-.55.45-1 1-1z" />
               </svg>
               <p className="mt-2 text-2xl font-black text-white">
-                {completed.score}/{completed.totalQuestions}
+                {completed.score}점
               </p>
               <p className="text-xs text-[var(--gray-400)]">
-                {completed.totalQuestions > 0 
-                  ? Math.round((completed.score / completed.totalQuestions) * 100) 
-                  : 0}% 정답
+                총 {completed.totalQuestions}점 중
               </p>
             </div>
           ) : (

@@ -36,24 +36,28 @@ export async function POST(_: Request, context: RouteContext) {
     .from("answer_keys")
     .select("question_id,answer");
 
-  // 해당 챌린지의 질문 수 가져오기
+  // 해당 챌린지의 질문과 배점 가져오기
   const { data: questions } = await supabase
     .from("questions")
-    .select("id")
+    .select("id,points")
     .eq("challenge_id", session.challenge_id);
 
-  const totalQuestions = questions?.length || 0;
+  // 총점 계산
+  const totalPoints = (questions || []).reduce((sum, q) => sum + (q.points || 0), 0);
 
-  // 점수 계산
-  let correctCount = 0;
+  // 점수 계산 (배점 합산)
+  let earnedPoints = 0;
   const answerKeyMap = new Map(
     (answerKeys || []).map((ak) => [ak.question_id, ak.answer])
+  );
+  const questionPointsMap = new Map(
+    (questions || []).map((q) => [q.id, q.points || 0])
   );
 
   (userAnswers || []).forEach((ua) => {
     const expected = answerKeyMap.get(ua.question_id);
     if (expected && ua.payload?.toString().trim() === expected.trim()) {
-      correctCount++;
+      earnedPoints += questionPointsMap.get(ua.question_id) || 0;
     }
   });
 
@@ -62,8 +66,8 @@ export async function POST(_: Request, context: RouteContext) {
     .update({
       status: "SUBMITTED",
       submitted_at: new Date().toISOString(),
-      score: correctCount,
-      total_questions: totalQuestions,
+      score: earnedPoints,
+      total_questions: totalPoints,
     })
     .eq("id", sessionId)
     .select("id,challenge_id,nickname,status,created_at,submitted_at,score,total_questions")
