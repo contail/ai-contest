@@ -4,44 +4,40 @@ type AnswerKey = Record<string, string | string[]>;
 
 const decodeUrls = (urls: string[]) => urls.map((url) => decodeURIComponent(url));
 
-const countOccurrences = (value: string, term: string) => {
-  if (!term) return 0;
-  let count = 0;
-  let index = 0;
-  while (true) {
-    const nextIndex = value.indexOf(term, index);
-    if (nextIndex === -1) break;
-    count += 1;
-    index = nextIndex + term.length;
-  }
-  return count;
-};
-
-const countIncludes = (urls: string[], term: string) =>
-  urls.reduce((total, url) => total + countOccurrences(url, term), 0);
-
-const findUrlContains = (urls: string[], term: string) =>
-  urls.find((url) => url.includes(term)) ?? "";
-
 export const buildPfctBlogAnswerKey = (): AnswerKey => {
   const decodedUrls = decodeUrls(pfctBlogUrls);
   const slugs = decodedUrls.map((url) =>
     url.replace("https://blog.pfct.co.kr/", "")
   );
 
-  const reservationCount = countIncludes(decodedUrls, "예약투자");
-  const loanCount = countIncludes(decodedUrls, "대출");
-  const hyphenFourPlusCount = slugs.filter((slug) => {
-    const count = (slug.match(/-/g) ?? []).length;
-    return count >= 4;
-  }).length;
-  const maxSlugLength = Math.max(...slugs.map((slug) => slug.length));
+  // Q1: 가장 많이 등장하는 영단어
+  const wordCount: Record<string, number> = {};
+  slugs.forEach((slug) => {
+    const words = slug.split("-").filter((w) => /^[a-z]+$/i.test(w));
+    words.forEach((w) => {
+      const lower = w.toLowerCase();
+      wordCount[lower] = (wordCount[lower] || 0) + 1;
+    });
+  });
+  const topWord = Object.entries(wordCount).sort((a, b) => b[1] - a[1])[0][0];
+
+  // Q2: 한글 포함 slug 개수
+  const koreanCount = slugs.filter((s) => /[가-힣]/.test(s)).length;
+
+  // Q3: 20XX-로 시작하는 URL 개수
+  const dateStartCount = slugs.filter((s) => /^20\d{2}-/.test(s)).length;
+
+  // Q4: 가장 짧은 slug 길이
+  const shortestLength = Math.min(...slugs.map((s) => s.length));
+
+  // Q5: 숫자로 끝나는 slug 개수
+  const endsWithNumberCount = slugs.filter((s) => /\d$/.test(s)).length;
 
   return {
-    "pfct-news-q1": findUrlContains(decodedUrls, "happyhour"),
-    "pfct-news-q2": String(reservationCount),
-    "pfct-news-q3": `${loanCount}회`,
-    "pfct-news-q4": String(hyphenFourPlusCount),
-    "pfct-news-q5": String(maxSlugLength),
+    "pfct-news-q1": topWord,
+    "pfct-news-q2": String(koreanCount),
+    "pfct-news-q3": `${dateStartCount}개`,
+    "pfct-news-q4": String(shortestLength),
+    "pfct-news-q5": `${endsWithNumberCount}개`,
   };
 };
