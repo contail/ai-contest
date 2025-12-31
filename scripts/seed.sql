@@ -38,23 +38,22 @@ VALUES
 -- Questions
 -- =============================================================================
 
--- pfct-news questions
+-- pfct-news questions (크롤링 기반 문제)
 INSERT INTO questions (id, challenge_id, "order", type, prompt, options, required) VALUES
-  ('pfct-news-q1', 'pfct-news', 1, 'single',
-   '"띵동! 매주 수요일에 찾아오는 행복, 해피아워로"에 해당하는 URL은 무엇인가요?',
-   '["https://blog.pfct.co.kr/happyhour","https://blog.pfct.co.kr/good-time-with-good-people-1","https://blog.pfct.co.kr/2024-year-end-party","https://blog.pfct.co.kr/flexing-year-end"]',
-   true),
-  ('pfct-news-q2', 'pfct-news', 2, 'short',
-   '전체 URL 문자열에서 "예약투자"는 몇 회 등장하나요? (없으면 0 입력)',
+  ('pfct-news-q1', 'pfct-news', 1, 'SHORT',
+   '본문에 ''AI''라는 키워드가 포함된 블로그는 몇 개인가요?',
    NULL, true),
-  ('pfct-news-q3', 'pfct-news', 3, 'single',
-   '전체 URL 문자열에서 "대출"은 몇 회 등장하나요?',
-   '["2회","3회","4회","5회"]', true),
-  ('pfct-news-q4', 'pfct-news', 4, 'short',
-   '하이픈(''-'')이 4개 이상 포함된 URL은 몇 개인가요? (숫자만 입력)',
+  ('pfct-news-q2', 'pfct-news', 2, 'SHORT',
+   '100개 블로그 본문에서 ''금리''라는 단어가 총 몇 회 등장하나요?',
    NULL, true),
-  ('pfct-news-q5', 'pfct-news', 5, 'short',
-   '도메인을 제외한 slug 기준, 가장 긴 slug의 길이는 몇 자인가요? (숫자만 입력)',
+  ('pfct-news-q3', 'pfct-news', 3, 'SHORT',
+   '''투자''라는 단어가 가장 많이 등장하는 블로그의 slug는? (slug: URL에서 도메인을 제외한 경로)',
+   NULL, true),
+  ('pfct-news-q4', 'pfct-news', 4, 'SHORT',
+   '본문에 ''담보''와 ''아파트'' 두 키워드가 모두 포함된 블로그는 몇 개인가요?',
+   NULL, true),
+  ('pfct-news-q5', 'pfct-news', 5, 'SHORT',
+   '''AI''라는 단어가 가장 많이 등장하는 블로그의 slug는? (slug: URL에서 도메인을 제외한 경로, 예: blog.pfct.co.kr/hello → hello)',
    NULL, true);
 
 -- pfct-ocr questions
