@@ -38,10 +38,10 @@ export const buildPfctBlogAnswerKey = (): AnswerKey => {
   const maxSlugLength = Math.max(...slugs.map((slug) => slug.length));
 
   return {
-    q1: findUrlContains(decodedUrls, "happyhour"),
-    q2: String(reservationCount),
-    q3: `${loanCount}회`,
-    q4: String(hyphenFourPlusCount),
-    q5: String(maxSlugLength),
+    "pfct-news-q1": findUrlContains(decodedUrls, "happyhour"),
+    "pfct-news-q2": String(reservationCount),
+    "pfct-news-q3": `${loanCount}회`,
+    "pfct-news-q4": String(hyphenFourPlusCount),
+    "pfct-news-q5": String(maxSlugLength),
   };
 };
