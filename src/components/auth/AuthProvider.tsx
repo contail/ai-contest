@@ -126,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabaseClient.auth.signOut();
+    await supabaseClient.auth.signOut({ scope: "global" });
     setUser(null);
     window.location.href = "/";
   };
@@ -137,7 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!res.ok) {
         return { error: "탈퇴 처리 중 오류가 발생했습니다." };
       }
-      await supabaseClient.auth.signOut();
+      await supabaseClient.auth.signOut({ scope: "global" });
       setUser(null);
       window.location.href = "/";
       return { error: null };
