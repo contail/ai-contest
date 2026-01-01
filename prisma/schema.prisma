@@ -64,6 +64,7 @@ model Question {
   options     String?
   required    Boolean   @default(false)
   points      Int       @default(0)
+  explanation String?
   createdAt   DateTime  @default(now()) @map("created_at")
   challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
   answers     Answer[]
