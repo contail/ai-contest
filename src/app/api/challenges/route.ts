@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabaseServer";
 
 export async function GET() {
   const selectFields =
-    "id,title,subtitle,summary,tags,badge,hero_copy,description,caution_text,dataset_label,dataset_file_name,dataset_description,dataset_download_url,restrict_dataset_url,is_published,created_at";
+    "id,title,subtitle,summary,tags,badge,difficulty,hero_copy,description,caution_text,dataset_label,dataset_file_name,dataset_description,dataset_download_url,restrict_dataset_url,is_published,created_at";
 
   const { data: published, error: publishedError } = await supabase
     .from("challenges")
@@ -34,6 +34,7 @@ export async function GET() {
     summary: challenge.summary,
     tags: challenge.tags ? JSON.parse(challenge.tags) : [],
     badge: challenge.badge,
+    difficulty: challenge.difficulty ?? 1,
     heroCopy: challenge.hero_copy,
     description: challenge.description,
     cautionText: challenge.caution_text,
