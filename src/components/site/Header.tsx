@@ -5,7 +5,8 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { UserMenu } from "@/components/auth/UserMenu";
 
 const navItems = [
-  { label: "콘테스트 목록", href: "/", adminOnly: false },
+  { label: "챌린지", href: "/", adminOnly: false },
+  { label: "리더보드", href: "/leaderboard", adminOnly: false },
   { label: "결과 요약", href: "/results", adminOnly: true },
   { label: "관리자", href: "/admin", adminOnly: true },
 ];

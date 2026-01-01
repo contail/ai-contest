@@ -1,52 +1,23 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type LeaderboardEntry = {
   rank: number;
   nickname: string;
-  score: number;
+  totalScore: number;
   totalQuestions: number;
-  percentage: number;
-  submittedAt: string;
-  challengeId: string;
-  challengeTitle: string;
+  challengesCompleted: number;
+  averagePercentage: number;
 };
 
 type Props = {
-  challengeId?: string;
   limit?: number;
-  showChallengeTitle?: boolean;
 };
 
-const getRankIcon = (rank: number) => {
-  switch (rank) {
-    case 1:
-      return "🥇";
-    case 2:
-      return "🥈";
-    case 3:
-      return "🥉";
-    default:
-      return null;
-  }
-};
 
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("ko-KR", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
-
-export default function Leaderboard({
-  challengeId,
-  limit = 10,
-  showChallengeTitle = true,
-}: Props) {
+export default function Leaderboard({ limit = 50 }: Props) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -54,7 +25,6 @@ export default function Leaderboard({
     const fetchLeaderboard = async () => {
       try {
         const params = new URLSearchParams();
-        if (challengeId) params.set("challengeId", challengeId);
         params.set("limit", limit.toString());
 
         const res = await fetch(`/api/leaderboard?${params.toString()}`);
@@ -68,7 +38,7 @@ export default function Leaderboard({
     };
 
     fetchLeaderboard();
-  }, [challengeId, limit]);
+  }, [limit]);
 
   if (loading) {
     return (
@@ -98,88 +68,50 @@ export default function Leaderboard({
               <th className="px-4 py-3 text-left font-semibold text-[var(--gray-700)]">
                 닉네임
               </th>
-              {showChallengeTitle && (
-                <th className="hidden px-4 py-3 text-left font-semibold text-[var(--gray-700)] md:table-cell">
-                  챌린지
-                </th>
-              )}
               <th className="px-4 py-3 text-right font-semibold text-[var(--gray-700)]">
-                점수
+                총점
               </th>
-              <th className="hidden px-4 py-3 text-right font-semibold text-[var(--gray-700)] sm:table-cell">
-                정답률
+              <th className="hidden px-4 py-3 text-center font-semibold text-[var(--gray-700)] sm:table-cell">
+                참여
               </th>
-              <th className="hidden px-4 py-3 text-right font-semibold text-[var(--gray-700)] lg:table-cell">
-                제출 시간
+              <th className="hidden px-4 py-3 text-right font-semibold text-[var(--gray-700)] md:table-cell">
+                평균 정답률
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--border)]">
-            {leaderboard.map((entry) => {
-              const rankIcon = getRankIcon(entry.rank);
-              const isTopThree = entry.rank <= 3;
-
-              return (
+            {leaderboard.map((entry) => (
                 <tr
-                  key={`${entry.challengeId}-${entry.nickname}`}
-                  className={`transition-colors hover:bg-[var(--gray-50)] ${
-                    isTopThree ? "bg-[var(--lime-50)]/30" : ""
-                  }`}
+                  key={entry.nickname}
+                  className="transition-colors hover:bg-[var(--gray-50)]"
                 >
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      {rankIcon ? (
-                        <span className="text-lg">{rankIcon}</span>
-                      ) : (
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--gray-100)] text-xs font-medium text-[var(--gray-600)]">
-                          {entry.rank}
-                        </span>
-                      )}
-                    </div>
+                    <span className="text-sm font-semibold text-[var(--gray-700)]">
+                      {entry.rank}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`font-medium ${
-                        isTopThree
-                          ? "text-[var(--gray-900)]"
-                          : "text-[var(--gray-700)]"
-                      }`}
+                    <Link
+                      href={`/profile/${encodeURIComponent(entry.nickname)}`}
+                      className="font-medium text-[var(--gray-900)] underline decoration-[var(--gray-300)] underline-offset-2 hover:decoration-[var(--gray-500)]"
                     >
                       {entry.nickname}
-                    </span>
+                    </Link>
                   </td>
-                  {showChallengeTitle && (
-                    <td className="hidden px-4 py-3 text-[var(--gray-600)] md:table-cell">
-                      {entry.challengeTitle}
-                    </td>
-                  )}
                   <td className="px-4 py-3 text-right">
                     <span className="font-semibold text-[var(--lime-600)]">
-                      {entry.score}
+                      {entry.totalScore}
                     </span>
-                    <span className="text-[var(--gray-400)]">
-                      /{entry.totalQuestions}
-                    </span>
+                    <span className="text-[var(--gray-400)]">점</span>
                   </td>
-                  <td className="hidden px-4 py-3 text-right sm:table-cell">
-                    <div className="flex items-center justify-end gap-2">
-                      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[var(--gray-200)]">
-                        <div
-                          className="h-full rounded-full bg-[var(--lime-500)] transition-all"
-                          style={{ width: `${entry.percentage}%` }}
-                        />
-                      </div>
-                      <span className="min-w-[3rem] text-[var(--gray-600)]">
-                        {entry.percentage}%
-                      </span>
-                    </div>
+                  <td className="hidden px-4 py-3 text-center text-[var(--gray-600)] sm:table-cell">
+                    {entry.challengesCompleted}개
                   </td>
-                  <td className="hidden px-4 py-3 text-right text-[var(--gray-500)] lg:table-cell">
-                    {formatDate(entry.submittedAt)}
+                  <td className="hidden px-4 py-3 text-right text-[var(--gray-600)] md:table-cell">
+                    {entry.averagePercentage}%
                   </td>
                 </tr>
-              );
-            })}
+            ))}
           </tbody>
         </table>
       </div>

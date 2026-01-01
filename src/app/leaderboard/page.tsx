@@ -1,12 +1,9 @@
-import ChallengeList from "@/components/challenge/ChallengeList";
+import Leaderboard from "@/components/leaderboard/Leaderboard";
 import Header from "@/components/site/Header";
-import { getChallenges } from "@/lib/challengeQueries";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
-  const challenges = await getChallenges();
-
+export default function LeaderboardPage() {
   return (
     <div className="min-h-screen bg-[var(--background)]">
       <Header />
@@ -16,32 +13,23 @@ export default async function Home() {
           <div className="absolute left-0 top-0 h-full w-1.5 bg-[var(--lime-500)]" />
           <div className="space-y-3 pl-4">
             <span className="inline-block rounded-md bg-[var(--lime-500)] px-3 py-1 text-xs font-semibold text-white">
-              AI Challenge Hub
+              Leaderboard
             </span>
             <h1 className="text-2xl font-bold text-[var(--gray-900)] md:text-3xl">
-              AI 챌린지에 도전하세요
+              리더보드
             </h1>
             <p className="max-w-lg text-sm leading-relaxed text-[var(--gray-600)]">
-              데이터 분석, 로그 검증 등 다양한 AI 챌린지에 참여하고 실력을 증명하세요.
+              AI Challenge Hub의 최고 점수 기록을 확인하세요.
             </p>
           </div>
         </section>
 
-        {/* 챌린지 목록 */}
-        <section className="space-y-6">
-          <div className="flex items-end justify-between">
-            <div>
-              <h2 className="text-xl font-bold text-[var(--gray-900)]">
-                챌린지 목록
-              </h2>
-              <p className="mt-1 text-sm text-[var(--gray-500)]">
-                총 {challenges.length}개의 챌린지가 준비되어 있습니다
-              </p>
-            </div>
-          </div>
-          <ChallengeList challenges={challenges} />
+        {/* 전체 리더보드 */}
+        <section>
+          <Leaderboard limit={100} />
         </section>
       </main>
     </div>
   );
 }
+
