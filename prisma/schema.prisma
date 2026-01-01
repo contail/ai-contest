@@ -27,6 +27,7 @@ model Challenge {
   summary            String
   tags               String
   badge              String?
+  difficulty         Int                 @default(1) // 1: 입문, 2: 중급, 3: 고급, 4: 전문가
   heroCopy           String?             @map("hero_copy")
   description        String
   cautionText        String?             @map("caution_text")

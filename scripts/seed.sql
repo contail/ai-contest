@@ -17,11 +17,11 @@ DELETE FROM challenges;
 -- Challenges
 -- =============================================================================
 
-INSERT INTO challenges (id, title, subtitle, summary, tags, badge, description, caution_text, dataset_label, dataset_file_name, dataset_description, dataset_download_url, restrict_dataset_url, is_published)
+INSERT INTO challenges (id, title, subtitle, summary, tags, badge, difficulty, description, caution_text, dataset_label, dataset_file_name, dataset_description, dataset_download_url, restrict_dataset_url, is_published)
 VALUES
   ('pfct-news', 'PFCT Blog Insight', 'AI Challenge Hub',
    'PFCT 블로그 콘텐츠를 기반으로 카테고리·주제 인식과 근거 판별 능력을 확인하는 콘테스트.',
-   '["리서치","콘텐츠 분석","분류"]', 'N',
+   '["리서치","콘텐츠 분석","분류"]', NULL, 2,
    'PFCT 블로그 데이터셋을 기반으로 카테고리와 주제를 정확히 구분하는 능력을 확인합니다. 제공된 URL 목록을 바탕으로 각 질문 항목에 맞는 근거를 선택하세요.',
    '모든 응답은 지정된 데이터셋 범위 안에서만 인정됩니다. 최종 제출 이후에는 수정이 불가합니다.',
    'PFCT 블로그 100건', 'pfct_blog_urls_100.txt', 'PFCT 블로그 게시글 URL 목록',
@@ -29,7 +29,7 @@ VALUES
 
   ('pfct-ocr', '스마트 배달 배차 분석 챌린지', 'AI Challenge Hub',
    'AI 스마트 배차 엔진의 로그를 분석하여 규칙 준수 여부와 배차 효율을 검증하는 콘테스트.',
-   '["운영 분석","로그 검증","배차 최적화"]', 'N',
+   '["운영 분석","로그 검증","배차 최적화"]', NULL, 1,
    '배달 플랫폼의 효율성을 높이기 위해 도입된 AI 스마트 배차 엔진 로그를 분석합니다. 제공된 라이더 정보와 배차 로그(CSV/JSON)를 바탕으로 규칙이 제대로 적용되었는지 판단하고, 주어진 질문에 답하세요.',
    '모든 계산은 제공된 데이터셋 기준으로만 수행합니다. 제시된 규칙 외의 가정을 추가하지 마세요.',
    '배차 로그 3종', 'delivery_data.zip', 'rider_info.json, dispatch_log.csv, pending_orders.csv',
@@ -37,31 +37,31 @@ VALUES
 
   ('drone-multimodal', '드론 AI 비상 상황 판단 챌린지', '멀티모달 분석',
    '자율주행 드론의 비행 로그와 카메라 이미지를 분석하여 AI의 비상 판단이 적절했는지 평가합니다.',
-   '["멀티모달","센서 분석","AI 판단"]', 'N',
+   '["멀티모달","센서 분석","AI 판단"]', NULL, 3,
    '자율주행 드론 관제 센터의 엔지니어로서, 비행 중 발생한 비상 상황(Event)을 분석해야 합니다. AI가 현장에서 수집한 멀티모달 데이터(시각 정보 + 센서 로그)를 상호 검증하여, AI의 판단이 적절했는지 평가해 주세요.',
    '센서 로그와 이미지를 함께 분석해야 정확한 판단이 가능합니다. drone_specs.json의 안전 규칙을 참고하세요.',
    '드론 비행 로그 및 이미지', 'drone_log_data.zip', '3개 이벤트의 센서 로그(JSON)와 현장 이미지(PNG), 드론 사양서 포함',
    '/datasets/drone_log_data.zip', false, true),
 
-  ('voyager-signal', '🛰️ 보이저 3호 외계 신호 해독', '심우주 탐사',
+  ('voyager-signal', '보이저 3호 외계 신호 해독', '심우주 탐사',
    '심우주를 탐사 중인 보이저 3호가 수신한 정체불명의 신호를 해독하여 외계 문명의 메시지를 밝혀내세요.',
-   '["신호 처리","패턴 인식","이진 해독"]', 'N',
+   '["신호 처리","패턴 인식","이진 해독"]', NULL, 3,
    '보이저 3호가 수신한 이진 신호에는 엄청난 노이즈 속에 의미 있는 메시지가 숨겨져 있습니다. 제공된 해독 규칙에 따라 노이즈를 제거하고, 8비트 ASCII 코드로 변환하여 외계 문명의 메시지를 해독하세요.',
    '신호는 8비트 단위로 처리합니다. 1010으로 시작하는 청크는 노이즈입니다. 헤더/푸터 패턴을 정확히 찾아야 합니다.',
    '신호 데이터 및 해독 규칙', 'voyager_signal.zip', 'signal_data.txt (이진 신호), decoding_rules.md (해독 규칙)',
    '/datasets/voyager_signal.zip', false, true),
 
-  ('ott-analysis', '🎬 OTT 콘텐츠 흥행 분석', '데이터 사이언스',
+  ('ott-analysis', 'OTT 콘텐츠 흥행 분석', '데이터 사이언스',
    '글로벌 OTT 플랫폼의 콘텐츠와 사용자 시청 기록을 분석하여 흥행 패턴을 파악하고 추천 알고리즘을 검증하세요.',
-   '["통계 분석","추천 시스템","사용자 행동"]', 'N',
+   '["통계 분석","추천 시스템","사용자 행동"]', NULL, 2,
    'OTT 플랫폼의 데이터 과학자가 되어 콘텐츠 메타데이터와 사용자 시청 로그를 분석합니다. 장르별 흥행도, VIP 유저 선호도, 추천 알고리즘 검증 등의 과제를 수행하세요.',
    '모든 분석은 제공된 데이터셋 범위 내에서만 수행합니다. 시청 시간의 단위는 분(minutes)입니다.',
    'OTT 콘텐츠 데이터', 'ott_data.zip', 'contents_meta.csv (콘텐츠 정보), user_logs.json (시청 기록)',
    '/datasets/ott_data.zip', false, true),
 
-  ('warehouse-robot', '🤖 스마트 물류 로봇 동선 최적화', '알고리즘 시뮬레이션',
+  ('warehouse-robot', '스마트 물류 로봇 동선 최적화', '알고리즘 시뮬레이션',
    '스마트 물류 센터의 AI 로봇들이 주문을 처리하는 최적 경로를 설계하고 시스템 병목을 분석하세요.',
-   '["경로 탐색","작업 할당","시뮬레이션"]', 'N',
+   '["경로 탐색","작업 할당","시뮬레이션"]', NULL, 4,
    '최첨단 물류 센터에서 수십 대의 로봇이 물건을 나르고 있습니다. 창고 지도, 주문 목록, 로봇 상태를 분석하여 최적의 이동 경로와 작업 할당을 설계하세요.',
    '로봇은 상하좌우로만 이동 가능합니다. 맨해튼 거리를 기준으로 계산하세요. 배터리 20% 미만 로봇은 작업 불가합니다.',
    '물류 센터 시뮬레이션 데이터', 'warehouse_data.zip', 'warehouse_map.txt, orders.json, robot_status.csv, operation_rules.md',

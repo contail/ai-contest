@@ -11,8 +11,24 @@ type ChallengeCardProps = {
   completed?: CompletedInfo;
 };
 
+const getDifficultyInfo = (difficulty: number) => {
+  switch (difficulty) {
+    case 1:
+      return { label: "Lv.1 입문", color: "bg-green-500", textColor: "text-green-500" };
+    case 2:
+      return { label: "Lv.2 중급", color: "bg-yellow-500", textColor: "text-yellow-500" };
+    case 3:
+      return { label: "Lv.3 고급", color: "bg-orange-500", textColor: "text-orange-500" };
+    case 4:
+      return { label: "Lv.4 전문가", color: "bg-red-500", textColor: "text-red-500" };
+    default:
+      return { label: "Lv.1 입문", color: "bg-green-500", textColor: "text-green-500" };
+  }
+};
+
 export default function ChallengeCard({ challenge, completed }: ChallengeCardProps) {
   const isCompleted = !!completed;
+  const difficultyInfo = getDifficultyInfo(challenge.difficulty);
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-[var(--radius-lg)] bg-[var(--card)] shadow-[var(--shadow-sm)] transition-all duration-300 hover:shadow-[var(--shadow-xl)] hover:-translate-y-1">
@@ -35,14 +51,18 @@ export default function ChallengeCard({ challenge, completed }: ChallengeCardPro
           </span>
         </div>
 
-        {/* 우상단 배지 - 완료 시만 표시 */}
-        {isCompleted && (
-          <div className="absolute right-3 top-3">
+        {/* 우상단 배지 - 난이도 또는 완료 표시 */}
+        <div className="absolute right-3 top-3">
+          {isCompleted ? (
             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--lime-500)] text-[10px] font-bold text-[var(--gray-900)]">
               ✓
             </span>
-          </div>
-        )}
+          ) : (
+            <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold text-white ${difficultyInfo.color}`}>
+              {difficultyInfo.label}
+            </span>
+          )}
+        </div>
 
         {/* 중앙 - 완료 시 트로피와 점수, 미완료 시 아이콘 */}
         <div className="absolute inset-0 flex items-center justify-center">

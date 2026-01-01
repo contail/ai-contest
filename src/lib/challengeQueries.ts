@@ -8,6 +8,7 @@ export type ChallengeCardData = {
   summary: string;
   tags: string[];
   badge: string | null;
+  difficulty: number;
   heroCopy: string | null;
   description: string;
   cautionText: string;
@@ -53,10 +54,10 @@ export async function getChallenges(): Promise<ChallengeCardData[]> {
   const { data, error } = await supabase
     .from("challenges")
     .select(
-      "id,title,subtitle,summary,tags,badge,hero_copy,description,caution_text,dataset_label,dataset_file_name,dataset_description,dataset_download_url,restrict_dataset_url"
+      "id,title,subtitle,summary,tags,badge,difficulty,hero_copy,description,caution_text,dataset_label,dataset_file_name,dataset_description,dataset_download_url,restrict_dataset_url"
     )
     .eq("is_published", true)
-    .order("created_at", { ascending: false });
+    .order("difficulty", { ascending: true });
 
   if (error || !data) {
     console.error("getChallenges failed", error);
@@ -70,6 +71,7 @@ export async function getChallenges(): Promise<ChallengeCardData[]> {
     summary: challenge.summary,
     tags: parseTags(challenge.tags),
     badge: challenge.badge,
+    difficulty: challenge.difficulty ?? 1,
     heroCopy: challenge.hero_copy,
     description: challenge.description,
     cautionText: challenge.caution_text,
@@ -90,7 +92,7 @@ export async function getChallengeDetail(
   const { data: challenge, error } = await supabase
     .from("challenges")
     .select(
-      "id,title,subtitle,summary,tags,badge,hero_copy,description,caution_text,dataset_label,dataset_file_name,dataset_description,dataset_download_url,restrict_dataset_url"
+      "id,title,subtitle,summary,tags,badge,difficulty,hero_copy,description,caution_text,dataset_label,dataset_file_name,dataset_description,dataset_download_url,restrict_dataset_url"
     )
     .eq("id", id)
     .maybeSingle();
@@ -115,6 +117,7 @@ export async function getChallengeDetail(
     summary: challenge.summary,
     tags: parseTags(challenge.tags),
     badge: challenge.badge,
+    difficulty: challenge.difficulty ?? 1,
     heroCopy: challenge.hero_copy,
     description: challenge.description,
     cautionText: challenge.caution_text,
@@ -160,6 +163,7 @@ export async function getChallengeDetailOrMock(
     summary: mock.summary,
     tags: mock.tags,
     badge: mock.badge ?? null,
+    difficulty: 1,
     heroCopy: mock.heroCopy ?? null,
     description: mock.description,
     cautionText: mock.cautionText,
