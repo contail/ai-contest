@@ -58,7 +58,7 @@ export default function ChallengeIntroPanel({
           )}
           {challenge.id === "voice-from-abyss" && (
             <a
-              className="inline-flex items-center gap-3 rounded-[var(--radius-md)] bg-[var(--gray-600)] px-5 py-3.5 text-sm font-medium text-white transition hover:bg-[var(--gray-500)]"
+              className="inline-flex items-center gap-3 rounded-[var(--radius-md)] bg-[var(--gray-800)] px-5 py-3.5 text-sm font-medium text-white transition hover:bg-[var(--gray-700)]"
               href="/datasets/protocol_v2_draft.png"
               download="protocol_v2_draft.png"
             >
