@@ -29,17 +29,21 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data: existingSession } = await supabase
+  const { data: existingSession, error: selectError } = await supabase
     .from("submission_sessions")
     .select("id,challenge_id,user_id,nickname,status,created_at,submitted_at,score,total_questions")
     .eq("challenge_id", body.challengeId)
     .eq("nickname", body.nickname)
     .maybeSingle();
 
+  if (selectError) {
+    console.error("Session select error:", selectError);
+  }
+
   let session = existingSession;
 
   if (!session) {
-    const { data: newSession } = await supabase
+    const { data: newSession, error: insertError } = await supabase
       .from("submission_sessions")
       .insert({
         id: crypto.randomUUID(),
@@ -49,7 +53,27 @@ export async function POST(request: Request) {
       })
       .select("id,challenge_id,user_id,nickname,status,created_at,submitted_at,score,total_questions")
       .single();
-    session = newSession;
+
+    if (insertError) {
+      // 중복 키 에러 (23505) - 이미 존재하는 세션을 다시 조회
+      if (insertError.code === "23505") {
+        const { data: retrySession } = await supabase
+          .from("submission_sessions")
+          .select("id,challenge_id,user_id,nickname,status,created_at,submitted_at,score,total_questions")
+          .eq("challenge_id", body.challengeId)
+          .eq("nickname", body.nickname)
+          .single();
+        session = retrySession;
+      } else {
+        console.error("Session insert error:", insertError);
+        return NextResponse.json(
+          { message: insertError.message },
+          { status: 500 }
+        );
+      }
+    } else {
+      session = newSession;
+    }
   } else if (existingSession && body.userId && !existingSession.user_id) {
     await supabase
       .from("submission_sessions")

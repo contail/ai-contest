@@ -25,9 +25,9 @@ export function LoginButton({
     <button
       onClick={handleClick}
       disabled={loading}
-      className={`inline-flex items-center justify-center gap-2.5 rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-white px-4 py-3 text-sm font-medium text-[var(--gray-700)] transition hover:border-[var(--gray-300)] hover:bg-[var(--gray-50)] disabled:opacity-50 ${fullWidth ? "w-full" : ""} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-[var(--border)] bg-white px-3 py-2 text-xs font-medium text-[var(--gray-600)] transition hover:bg-[var(--gray-50)] disabled:opacity-50 ${fullWidth ? "w-full" : ""} ${className}`}
     >
-      <svg className="h-5 w-5" viewBox="0 0 24 24">
+      <svg className="h-4 w-4" viewBox="0 0 24 24">
         <path
           fill="#4285F4"
           d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

@@ -21,6 +21,10 @@ const getDifficultyInfo = (difficulty: number) => {
       return { label: "Lv.3 고급", color: "bg-orange-500", textColor: "text-orange-500" };
     case 4:
       return { label: "Lv.4 전문가", color: "bg-red-500", textColor: "text-red-500" };
+    case 5:
+      return { label: "Lv.5 하드코어", color: "bg-purple-600", textColor: "text-purple-600" };
+    case 6:
+      return { label: "Lv.6 심연", color: "bg-black", textColor: "text-black" };
     default:
       return { label: "Lv.1 입문", color: "bg-green-500", textColor: "text-green-500" };
   }

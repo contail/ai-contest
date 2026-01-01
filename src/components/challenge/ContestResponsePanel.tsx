@@ -76,9 +76,12 @@ export default function ContestResponsePanel({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sessionCreatingRef = useRef(false);
 
   useEffect(() => {
     if (!user || !nickname) return;
+    if (sessionCreatingRef.current) return;
+    sessionCreatingRef.current = true;
 
     const createSession = async () => {
       try {

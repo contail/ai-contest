@@ -1,18 +1,25 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabaseServer";
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { autoRefreshToken: false, persistSession: false } }
-);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const authHeader = request.headers.get("Authorization");
+    const accessToken = authHeader?.replace("Bearer ", "");
 
-    if (!user) {
+    if (!accessToken) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false },
+    });
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
+
+    if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -40,7 +47,7 @@ export async function POST() {
       .eq("id", user.id);
 
     // 4. Supabase Auth에서 사용자 삭제 (Admin API 필요)
-    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(user.id);
+    const { error: deleteError } = await supabase.auth.admin.deleteUser(user.id);
 
     if (deleteError) {
       console.error("Failed to delete auth user:", deleteError);

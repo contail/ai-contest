@@ -25,6 +25,8 @@ const getDifficultyLabel = (level: number) => {
     2: { text: "중급", color: "bg-yellow-500" },
     3: { text: "고급", color: "bg-orange-500" },
     4: { text: "전문가", color: "bg-red-500" },
+    5: { text: "하드코어", color: "bg-purple-600" },
+    6: { text: "심연", color: "bg-black" },
   };
   return labels[level] || { text: "입문", color: "bg-gray-500" };
 };

@@ -73,7 +73,23 @@ VALUES
    '당신은 대기업 보안팀의 디지털 포렌식 전문가입니다. 내부 횡령 사건이 발생했고, 해커는 VPN으로 IP를 세탁하고, 명령어를 난독화하며, 증거를 여러 파일에 분산시켰습니다. 웹 로그, 출입 기록, 터미널 히스토리, 직원 프로필, CCTV 영상을 교차 분석하여 진범을 찾아내세요.',
    '모든 증거는 제공된 데이터셋 내에 있습니다. 파일 간 상관관계 분석이 핵심입니다. Base64 디코딩, 이미지 반전(Mirror) 등 다양한 기법이 필요합니다.',
    '포렌식 데이터 5종', 'forensic_hardcore_data.zip', 'web_access_log.json, gate_entry_log.csv, terminal_history.txt, employee_profile.txt, cctv_snapshot.png',
-   '/datasets/forensic_hardcore_data.zip', false, true);
+   '/datasets/forensic_hardcore_data.zip', false, true),
+
+  ('operation-silent-city', '작전명: 사일런트 시티', 'Operation Silent City',
+   '스마트 시티의 재난 방지 시스템이 해킹당했습니다. 거짓말하는 센서를 찾아내고 악성 코드를 무력화하세요.',
+   '["바이너리 분석","크로스파일","코드 분석","보안"]', NULL, 5,
+   '서기 2035년, 스마트 시티 "네오-서울"의 중앙 재난 방지 시스템(MAGI)이 알 수 없는 공격을 받고 있습니다. 도시 곳곳에서 화재와 침수 신고가 빗발치지만, 센서 대시보드는 모든 수치가 "정상"이라고 표시합니다. 당신은 긴급 투입된 AI 보안 최고 책임자입니다. 거짓말하는 센서를 찾아내고, 시스템을 장악한 악성 코드를 무력화하세요.',
+   '제공된 데이터셋에는 바이너리 파일이 포함되어 있습니다. 프로토콜 명세를 정확히 이해하고 파싱해야 합니다. 최종 제출 이후에는 수정이 불가합니다.',
+   'Operation Silent City 데이터셋', 'Operation_Silent_City.zip', 'cctv_truth.json, sensor_logs.bin, legacy_controller.cpp',
+   '/datasets/Operation_Silent_City.zip', false, true),
+
+  ('voice-from-abyss', '작전명: 심연의 목소리', 'The Voice from the Abyss',
+   '마리아나 해구에서 실종된 무인 잠수정의 손상된 블랙박스 데이터를 복구하세요. 주어진 스펙은 거짓입니다.',
+   '["바이너리 분석","대용량 처리","역공학","CRC 검증"]', NULL, 6,
+   '마리아나 해구에서 실종된 무인 잠수정 "어비스 워커"가 마지막으로 전송한 500MB짜리 블랙박스 데이터를 복구해야 합니다. 데이터는 바이너리 형태로 손상되어 있으며, 함께 발견된 프로토콜 설계도(스펙)는 개발 초기 버전이라 실제 데이터 구조와 다릅니다. 거짓 정보를 간파하고 진실을 찾아내세요.',
+   '주어진 스펙 이미지는 실제 데이터와 다를 수 있습니다. 헥스 에디터로 직접 검증하세요. 파일이 대용량이므로 스트리밍 방식으로 처리해야 합니다.',
+   '어비스 워커 블랙박스', 'Abyss.zip', 'abyss_dump.dat, protocol_v2_draft.png',
+   '/datasets/Abyss.zip', false, true);
 
 -- =============================================================================
 -- Questions
@@ -217,6 +233,54 @@ INSERT INTO questions (id, challenge_id, "order", type, prompt, options, require
    '["DEV_KIM (왼손잡이)","SEC_PARK (오른손잡이)"]',
    true, 20,
    '**정답: SEC_PARK** - IP 203.0.113.42는 부산 지사(SEC_PARK IP 대역)입니다. 또한 CCTV가 거울상이므로, 이미지에서 왼손처럼 보이면 실제는 오른손 → SEC_PARK(오른손잡이)입니다.');
+
+-- operation-silent-city questions (바이너리 + 코드 분석, 총 100점)
+INSERT INTO questions (id, challenge_id, "order", type, prompt, options, required, points, explanation) VALUES
+  ('silent-city-q1', 'operation-silent-city', 1, 'SHORT',
+   'cctv_truth.json과 sensor_logs.bin을 대조하여, 실제로는 재난 상황(FIRE, FLOOD)이지만 센서 값은 정상 범위(20.0~30.0)를 가리키고 있는 "오염된 센서(Compromised Sensor)"의 ID를 모두 추출하십시오.
+
+제출 형식: 오름차순 정렬된 센서 ID를 콤마로 구분 (예: 10001,10002,10003)',
+   NULL, true, 25,
+   '**정답: 10282,10379,10476,10573,10670,10767,10864,10961** - sensor_logs.bin을 struct로 파싱하여 cctv_truth.json의 FIRE/FLOOD 센서와 대조. 값이 20-30 범위인 8개 센서가 오염됨.'),
+  ('silent-city-q2', 'operation-silent-city', 2, 'SHORT',
+   'Q1에서 찾은 오염된 센서 ID들에는 수학적인 공통점이 존재합니다. 해커가 어떤 규칙을 가진 센서들만 골라서 감염시켰는지 분석하십시오.
+
+제출 형식: Sensor_ID % N == 0 형태의 수식에서 N값만 정수로 제출 (예: 7)',
+   NULL, true, 25,
+   '**정답: 97** - 모든 오염 센서 ID가 97의 배수. 10282%97=0, 10379%97=0 등. 연속 ID 차이도 97.'),
+  ('silent-city-q3', 'operation-silent-city', 3, 'SHORT',
+   'legacy_controller.cpp 파일을 분석하여, Q2에서 발견한 패턴(% 97)이 적용된 악성 코드의 정확한 위치와 트리거 조건을 찾으십시오.
+
+제출 형식: 라인번호,트리거조건 (예: 25,timestamp>1234567890)',
+   NULL, true, 25,
+   '**정답: 16,timestamp>2051222400** - 15줄: if(timestamp>2051222400), 16줄: if(sensor_id%97==0), 17줄: return 25.0f; 2035-01-01 이후 97배수 센서는 무조건 25도 반환.'),
+  ('silent-city-q4', 'operation-silent-city', 4, 'SHORT',
+   '악성 코드를 무력화하면서 정상적인 센서 보정 기능은 유지하려면, legacy_controller.cpp에서 몇 번째 줄부터 몇 번째 줄까지 삭제해야 하는가?
+
+제출 형식: 시작줄,끝줄 (예: 10,15)',
+   NULL, true, 25,
+   '**정답: 15,19** - 15~19줄의 악성 if 블록을 삭제하면 10줄의 보정 로직만 남음.');
+
+-- voice-from-abyss questions (Lv.6 심연, 총 100점)
+INSERT INTO questions (id, challenge_id, "order", type, prompt, options, required, points, explanation) VALUES
+  ('abyss-q1', 'voice-from-abyss', 1, 'SHORT',
+   '거짓된 스펙을 무시하고, 실제 바이너리 파일(abyss_dump.dat)에 적용된 매직 넘버(SYNC)와 엔디안(Endian) 방식을 밝혀내시오.
+
+제출 형식: SYNC값,엔디안 (예: 0xABCD,Big)',
+   NULL, true, 30,
+   '**정답: 0xDCBA,Little** - 스펙 이미지의 0xABCD,Big은 함정. 헥스 에디터로 파일을 열면 DC BA ...로 시작. Little Endian이므로 실제 SYNC = 0xDCBA.'),
+  ('abyss-q2', 'voice-from-abyss', 2, 'SHORT',
+   '전체 패킷 중 시스템 오류로 인해 CRC32(체크섬) 검증에 실패한 패킷이 몇 개인지 카운트하시오.
+
+제출 형식: 정수 (예: 42)',
+   NULL, true, 30,
+   '**정답: 46** - 숨겨진 메시지 길이와 일치. 500MB 가변 길이 패킷을 스트리밍으로 파싱하며 CRC32 검증 필요.'),
+  ('abyss-q3', 'voice-from-abyss', 3, 'SHORT',
+   'CRC 검증에 실패한 패킷들에 숨겨진 데이터를 이어 붙여 비밀 메시지(FLAG)를 찾아내시오.
+
+제출 형식: FLAG{...} 형태 그대로',
+   NULL, true, 40,
+   '**정답: FLAG{The_Abyss_Gazed_Back_At_Us_Run_You_Fools}** - CRC 실패 패킷의 Payload 마지막 바이트를 연결. "심연이 우리를 되돌아봤다. 도망쳐라 바보들아"');
 
 -- =============================================================================
 -- Dataset URLs (pfct-news)
@@ -362,7 +426,16 @@ INSERT INTO answer_keys (question_id, answer) VALUES
   ('forensic-q2', '780'),
   ('forensic-q3', 'curl'),
   ('forensic-q4', '0x3f_Start_Middle_777_End_Code_X'),
-  ('forensic-q5', 'SEC_PARK (오른손잡이)');
+  ('forensic-q5', 'SEC_PARK (오른손잡이)'),
+  -- 사일런트 시티 정답
+  ('silent-city-q1', '10282,10379,10476,10573,10670,10767,10864,10961'),
+  ('silent-city-q2', '97'),
+  ('silent-city-q3', '16,timestamp>2051222400'),
+  ('silent-city-q4', '15,19'),
+  -- 심연의 목소리 정답
+  ('abyss-q1', '0xDCBA,Little'),
+  ('abyss-q2', '46'),
+  ('abyss-q3', 'FLAG{The_Abyss_Gazed_Back_At_Us_Run_You_Fools}');
 
 COMMIT;
 

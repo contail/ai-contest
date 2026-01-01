@@ -75,32 +75,63 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session?.user) {
-          await fetchUserProfile(session.user);
-        }
-      } catch {
-        // ignore
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initAuth();
+    let mounted = true;
 
     const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === "SIGNED_IN" && session?.user) {
+        if (!mounted) return;
+        if (session?.user) {
           await fetchUserProfile(session.user);
+          // 해시 정리
+          if (window.location.hash) {
+            window.history.replaceState(null, "", window.location.pathname + window.location.search);
+          }
         } else if (event === "SIGNED_OUT") {
           setUser(null);
         }
+        setLoading(false);
       }
     );
 
-    return () => subscription.unsubscribe();
+    // OAuth 콜백 감지 및 처리
+    const handleAuth = async () => {
+      // URL에 해시가 있으면 OAuth 콜백
+      if (window.location.hash && window.location.hash.includes("access_token")) {
+        // Supabase가 자동으로 처리하도록 약간 대기
+        const checkSession = async (attempts = 0): Promise<void> => {
+          const { data: { session } } = await supabaseClient.auth.getSession();
+          if (session?.user) {
+            if (mounted) {
+              await fetchUserProfile(session.user);
+              window.history.replaceState(null, "", window.location.pathname);
+              setLoading(false);
+            }
+          } else if (attempts < 10) {
+            await new Promise(r => setTimeout(r, 200));
+            return checkSession(attempts + 1);
+          } else {
+            if (mounted) setLoading(false);
+          }
+        };
+        await checkSession();
+      } else {
+        // 일반 페이지 로드
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (mounted) {
+          if (session?.user) {
+            await fetchUserProfile(session.user);
+          }
+          setLoading(false);
+        }
+      }
+    };
+
+    handleAuth();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [fetchUserProfile]);
 
   const signInWithGoogle = async (redirectTo?: string) => {
@@ -133,7 +164,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const withdraw = async () => {
     try {
-      const res = await fetch("/api/auth/withdraw", { method: "POST" });
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session?.access_token) {
+        return { error: "로그인이 필요합니다." };
+      }
+
+      const res = await fetch("/api/auth/withdraw", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${session.access_token}`,
+        },
+      });
       if (!res.ok) {
         return { error: "탈퇴 처리 중 오류가 발생했습니다." };
       }
