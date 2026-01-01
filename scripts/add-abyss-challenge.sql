@@ -22,8 +22,8 @@ VALUES (
   '주어진 스펙 이미지는 실제 데이터와 다를 수 있습니다. 헥스 에디터로 직접 검증하세요. 파일이 대용량이므로 스트리밍 방식으로 처리해야 합니다.',
   '어비스 워커 블랙박스',
   'Abyss.zip',
-  'abyss_dump.dat (바이너리 덤프), protocol_v2_draft.png (프로토콜 스펙 - 주의: 거짓 정보 포함)',
-  '/datasets/Abyss.zip',
+  'abyss_dump.dat (바이너리 덤프, 500MB)',
+  'http://static.creditplanet.co.kr/static/common/abyss_dump.dat',
   false,
   true
 );
