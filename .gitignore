@@ -39,5 +39,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-public/datasets/Abyss.zip
+# Large dataset files (hosted externally)
 public/datasets/Abyss.zip
