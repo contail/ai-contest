@@ -77,56 +77,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
+    const initAuth = async () => {
+      // OAuth 콜백인 경우 (해시에 access_token 포함)
+      const isOAuthCallback = window.location.hash?.includes("access_token");
+
+      if (isOAuthCallback) {
+        // Supabase가 해시를 처리할 시간을 줌
+        await new Promise(r => setTimeout(r, 300));
+
+        // 세션 확인
+        const { data: { session } } = await supabaseClient.auth.getSession();
+
+        if (session?.user) {
+          // 해시 제거하고 강제 새로고침 - 가장 확실한 방법
+          const cleanUrl = window.location.pathname + window.location.search;
+          window.location.replace(cleanUrl);
+          return;
+        }
+      }
+
+      // 일반 페이지 로드
+      const { data: { session } } = await supabaseClient.auth.getSession();
+
+      if (mounted) {
         if (session?.user) {
           await fetchUserProfile(session.user);
-          // 해시 정리
-          if (window.location.hash) {
-            window.history.replaceState(null, "", window.location.pathname + window.location.search);
-          }
-        } else if (event === "SIGNED_OUT") {
-          setUser(null);
         }
         setLoading(false);
       }
-    );
-
-    // OAuth 콜백 감지 및 처리
-    const handleAuth = async () => {
-      // URL에 해시가 있으면 OAuth 콜백
-      if (window.location.hash && window.location.hash.includes("access_token")) {
-        // Supabase가 자동으로 처리하도록 약간 대기
-        const checkSession = async (attempts = 0): Promise<void> => {
-          const { data: { session } } = await supabaseClient.auth.getSession();
-          if (session?.user) {
-            if (mounted) {
-              await fetchUserProfile(session.user);
-              window.history.replaceState(null, "", window.location.pathname);
-              setLoading(false);
-            }
-          } else if (attempts < 10) {
-            await new Promise(r => setTimeout(r, 200));
-            return checkSession(attempts + 1);
-          } else {
-            if (mounted) setLoading(false);
-          }
-        };
-        await checkSession();
-      } else {
-        // 일반 페이지 로드
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (mounted) {
-          if (session?.user) {
-            await fetchUserProfile(session.user);
-          }
-          setLoading(false);
-        }
-      }
     };
 
-    handleAuth();
+    // Auth state 변경 리스너
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted) return;
+
+        if (event === "SIGNED_IN" && session?.user) {
+          await fetchUserProfile(session.user);
+          setLoading(false);
+        } else if (event === "SIGNED_OUT") {
+          setUser(null);
+          setLoading(false);
+        } else if (event === "TOKEN_REFRESHED" && session?.user) {
+          await fetchUserProfile(session.user);
+        }
+      }
+    );
+
+    initAuth();
 
     return () => {
       mounted = false;
