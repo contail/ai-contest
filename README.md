@@ -1,36 +1,122 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Contest Hub
 
-## Getting Started
+AI 챌린지 플랫폼 - 데이터 분석, 로그 검증 등 다양한 AI 설계형 콘테스트를 운영하는 웹 애플리케이션
 
-First, run the development server:
+## 기술 스택
+
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS v4
+- **Database**: Supabase (PostgreSQL)
+- **Auth**: Supabase Auth
+- **Deployment**: Vercel
+
+## 프로젝트 구조
+
+```
+ai-contest/
+├── prisma/
+│   └── schema.prisma      # DB 스키마 문서화 (참조용, Prisma 클라이언트 미사용)
+├── public/
+│   └── datasets/          # 챌린지 데이터셋 파일
+├── scripts/               # 유틸리티 스크립트
+├── src/
+│   ├── app/
+│   │   ├── admin/         # 관리자 페이지
+│   │   ├── api/           # API Routes
+│   │   │   ├── admin/     # 관리자 API
+│   │   │   ├── auth/      # 인증 API
+│   │   │   ├── challenges/# 챌린지 API
+│   │   │   ├── leaderboard/ # 리더보드 API
+│   │   │   ├── sessions/  # 세션/답안 제출 API
+│   │   │   └── user/      # 사용자 API
+│   │   ├── challenge/     # 챌린지 상세 페이지
+│   │   ├── privacy/       # 개인정보처리방침
+│   │   ├── results/       # 결과 페이지 (관리자)
+│   │   └── terms/         # 이용약관
+│   ├── components/
+│   │   ├── admin/         # 관리자 컴포넌트
+│   │   ├── auth/          # 인증 컴포넌트
+│   │   ├── challenge/     # 챌린지 관련 컴포넌트
+│   │   ├── leaderboard/   # 리더보드 컴포넌트
+│   │   └── site/          # 공통 레이아웃 컴포넌트
+│   └── lib/
+│       ├── supabaseClient.ts  # Supabase 클라이언트 (브라우저)
+│       ├── supabaseServer.ts  # Supabase 클라이언트 (서버)
+│       ├── auth.ts            # 인증 유틸리티
+│       └── challengeQueries.ts # 챌린지 쿼리 함수
+└── package.json
+```
+
+## 데이터베이스 구조
+
+> DB 스키마는 `prisma/schema.prisma` 참조 (문서화 용도)
+> 실제 DB 접근은 Supabase JS 클라이언트 사용
+
+### 주요 테이블
+
+| 테이블 | 설명 |
+|--------|------|
+| `users` | 사용자 정보 (Supabase Auth 연동) |
+| `challenges` | 챌린지 정보 |
+| `questions` | 챌린지별 문제 |
+| `answer_keys` | 정답 키 |
+| `submission_sessions` | 응시 세션 |
+| `answers` | 사용자 답안 |
+
+## 환경 변수
+
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+```
+
+## 시작하기
+
+### 1. 의존성 설치
+
+```bash
+npm install
+# 또는
+bun install
+```
+
+### 2. 환경 변수 설정
+
+`.env.local` 파일 생성 후 Supabase 키 설정
+
+### 3. 개발 서버 실행
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+[http://localhost:3000](http://localhost:3000) 접속
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 주요 기능
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 사용자
+- 🏠 챌린지 목록 조회
+- 📝 챌린지 참여 및 답안 제출
+- 🏆 리더보드 확인
+- 📊 결과 확인
 
-## Learn More
+### 관리자
+- ⚙️ 챌린지 생성/수정
+- ❓ 문제 및 정답 키 관리
+- 📈 제출 현황 모니터링
+- 🔄 세션 초기화
 
-To learn more about Next.js, take a look at the following resources:
+## 배포
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Vercel에 배포됩니다. `main` 브랜치 푸시 시 자동 배포.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run build
+```
 
-## Deploy on Vercel
+## 라이선스
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Private

@@ -76,7 +76,7 @@ const isEqualAnswer = (
 async function ResultsContent() {
   const { data: sessions } = await supabase
     .from("submission_sessions")
-    .select("id,challenge_id,nickname,status,created_at,submitted_at")
+    .select("id,challenge_id,nickname,status,score,total_questions,created_at,submitted_at")
     .order("created_at", { ascending: false });
 
   const sessionList = (sessions ?? []).map((s) => ({
@@ -84,6 +84,8 @@ async function ResultsContent() {
     challengeId: s.challenge_id,
     nickname: s.nickname,
     status: s.status,
+    score: s.score as number | null,
+    totalQuestions: s.total_questions as number | null,
     createdAt: s.created_at,
     submittedAt: s.submitted_at,
   }));
@@ -124,7 +126,13 @@ async function ResultsContent() {
     answersBySession.get(answer.sessionId)?.push(answer);
   });
 
-  const grouped = sessionList.reduce<Record<string, typeof sessionList>>(
+  // 답변이 1개 이상이거나 제출 완료된 세션만 필터링
+  const activeSessionList = sessionList.filter((session) => {
+    const answerCount = answersBySession.get(session.id)?.length ?? 0;
+    return session.status === "SUBMITTED" || answerCount > 0;
+  });
+
+  const grouped = activeSessionList.reduce<Record<string, typeof sessionList>>(
     (acc, session) => {
       const key = session.challengeId;
       if (!acc[key]) acc[key] = [];
@@ -143,16 +151,16 @@ async function ResultsContent() {
           결과 요약
         </p>
         <h1 className="mt-2 text-2xl font-semibold text-slate-900">
-          응시 세션 현황
+          응시 현황
         </h1>
         <p className="mt-2 text-sm text-slate-600">
-          제출 상태와 응답 수를 요약합니다.
+          제출 상태와 점수를 확인합니다.
         </p>
       </section>
 
-      {sessionList.length === 0 ? (
+      {activeSessionList.length === 0 ? (
         <section className="border border-black/5 bg-[var(--card)] px-6 py-8 text-sm text-slate-600 shadow-sm">
-          아직 생성된 응시 세션이 없습니다.
+          아직 응시한 세션이 없습니다.
         </section>
       ) : (
         Object.entries(grouped).map(([challengeId, items]) => (
@@ -173,23 +181,36 @@ async function ResultsContent() {
             </div>
             <div className="mt-4 divide-y divide-slate-200">
               {items.map((session) => {
-                const answerKey = answerKeysMap.get(session.challengeId);
-                const answerMap = new Map(
-                  (answersBySession.get(session.id) ?? []).map((answer) => [
-                    answer.questionId,
-                    parseAnswerPayload(answer.payload),
-                  ])
-                );
-                const totalQuestions = answerKey
-                  ? Object.keys(answerKey).length
-                  : 0;
-                const correctCount = answerKey
-                  ? Object.entries(answerKey).reduce((count, [id, expected]) =>
-                      isEqualAnswer(answerMap.get(id), expected)
-                        ? count + 1
-                        : count,
-                    0)
-                  : 0;
+                const isSubmitted = session.status === "SUBMITTED";
+                const answerCount = answersBySession.get(session.id)?.length ?? 0;
+
+                // 제출된 세션은 저장된 점수 사용, 아니면 실시간 계산
+                let correctCount = 0;
+                let totalQuestions = 0;
+                let hasScore = false;
+
+                if (isSubmitted && session.score !== null && session.totalQuestions !== null) {
+                  correctCount = session.score;
+                  totalQuestions = session.totalQuestions;
+                  hasScore = true;
+                } else {
+                  const answerKey = answerKeysMap.get(session.challengeId);
+                  if (answerKey && Object.keys(answerKey).length > 0) {
+                    hasScore = true;
+                    totalQuestions = Object.keys(answerKey).length;
+                    const answerMap = new Map(
+                      (answersBySession.get(session.id) ?? []).map((answer) => [
+                        answer.questionId,
+                        parseAnswerPayload(answer.payload),
+                      ])
+                    );
+                    correctCount = Object.entries(answerKey).reduce(
+                      (count, [id, expected]) =>
+                        isEqualAnswer(answerMap.get(id), expected) ? count + 1 : count,
+                      0
+                    );
+                  }
+                }
 
                 return (
                   <div
@@ -204,21 +225,19 @@ async function ResultsContent() {
                     </div>
                     <div className="flex items-center gap-3 text-xs">
                       <span className="rounded-[var(--radius-sm)] border border-slate-200 px-2 py-1">
-                        {session.status === "SUBMITTED"
-                          ? "최종 제출"
-                          : "응시 중"}
+                        {isSubmitted ? "최종 제출" : "응시 중"}
                       </span>
-                      {answerKey ? (
+                      {hasScore ? (
                         <span className="rounded-[var(--radius-sm)] border border-[var(--lime-200)] bg-[var(--lime-50)] px-2 py-1 text-[var(--lime-700)]">
-                          정답 {correctCount}/{totalQuestions}
+                          {correctCount}/{totalQuestions}점
                         </span>
                       ) : (
                         <span className="rounded-[var(--radius-sm)] border border-slate-200 px-2 py-1 text-slate-500">
-                          정답 키 없음
+                          채점 대기
                         </span>
                       )}
                       <span className="text-slate-500">
-                        응답 {answersBySession.get(session.id)?.length ?? 0}개
+                        응답 {answerCount}개
                       </span>
                       <SessionResetButton
                         sessionId={session.id}

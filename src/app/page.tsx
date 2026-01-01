@@ -1,4 +1,5 @@
 import ChallengeList from "@/components/challenge/ChallengeList";
+import Leaderboard from "@/components/leaderboard/Leaderboard";
 import Header from "@/components/site/Header";
 import { getChallenges } from "@/lib/challengeQueries";
 
@@ -43,6 +44,21 @@ export default async function Home() {
             </div>
           </div>
           <ChallengeList challenges={challenges} />
+        </section>
+
+        {/* 리더보드 */}
+        <section className="space-y-6">
+          <div className="flex items-end justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-[var(--gray-900)]">
+                🏆 리더보드
+              </h2>
+              <p className="mt-1 text-sm text-[var(--gray-500)]">
+                최고 점수를 기록한 참가자들을 확인하세요
+              </p>
+            </div>
+          </div>
+          <Leaderboard limit={10} />
         </section>
       </main>
     </div>

@@ -62,6 +62,7 @@ model Question {
   prompt      String
   options     String?
   required    Boolean   @default(false)
+  points      Int       @default(0)
   createdAt   DateTime  @default(now()) @map("created_at")
   challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
   answers     Answer[]
@@ -71,16 +72,18 @@ model Question {
 }
 
 model SubmissionSession {
-  id          String    @id @default(cuid())
-  userId      String?   @map("user_id")
-  challengeId String    @map("challenge_id")
-  nickname    String
-  status      String    @default("DRAFT")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  submittedAt DateTime? @map("submitted_at")
-  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
-  answers     Answer[]
+  id             String    @id @default(cuid())
+  userId         String?   @map("user_id")
+  challengeId    String    @map("challenge_id")
+  nickname       String
+  status         String    @default("DRAFT")
+  score          Int?
+  totalQuestions Int?      @map("total_questions")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  submittedAt    DateTime? @map("submitted_at")
+  user           User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  challenge      Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  answers        Answer[]
 
   @@unique([challengeId, nickname])
   @@map("submission_sessions")
