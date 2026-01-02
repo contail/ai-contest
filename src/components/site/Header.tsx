@@ -9,7 +9,7 @@ import { LoginButton } from "@/components/auth/LoginButton";
 const navItems = [
   { label: "챌린지", href: "/", adminOnly: false },
   { label: "리더보드", href: "/leaderboard", adminOnly: false },
-  { label: "지원자 평가", href: "/assessment", adminOnly: false },
+  // { label: "지원자 평가", href: "/assessment", adminOnly: false }, // 임시 비활성화
   { label: "결과 요약", href: "/results", adminOnly: true },
   { label: "관리자", href: "/admin", adminOnly: true },
 ];
